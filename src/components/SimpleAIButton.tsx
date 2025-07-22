@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getOpenAIChatResponse } from '../api/chat-service';
+import { getAnthropicChatResponse } from '../api/chat-service';
 import { useLyricStore } from '../state/lyricStore';
 
 export function SimpleAIButton() {
@@ -21,7 +21,7 @@ export function SimpleAIButton() {
         ? `Help me write the next line for this song:\n\n${currentLyrics}`
         : "Help me start writing song lyrics. Give me a simple first line for a verse.";
 
-      const response = await getOpenAIChatResponse(prompt);
+      const response = await getAnthropicChatResponse(prompt);
       
       // Show the response in an alert for now
       Alert.alert("AI Suggestion", response.content, [

@@ -6,7 +6,7 @@ import { useLyricStore } from '../state/lyricStore';
 import { LyricSection } from '../components/LyricSection';
 // import { KeyboardToolbar } from '../components/KeyboardToolbar';
 // import { SimpleAIButton } from '../components/SimpleAIButton';
-import { Sidebar } from '../components/Sidebar';
+// import { Sidebar } from '../components/Sidebar';
 
 interface LyricPadScreenProps {
   onBack?: () => void;
@@ -110,8 +110,8 @@ export function LyricPadScreen({ onBack }: LyricPadScreenProps = {}) {
         />
       )} */
 
-      {/* Sidebar */}
-      <Sidebar
+      {/* Sidebar - Temporarily disabled */}
+      {/* <Sidebar
         visible={showSidebar}
         onClose={() => setShowSidebar(false)}
         onSelectTool={(tool) => {
@@ -126,7 +126,7 @@ export function LyricPadScreen({ onBack }: LyricPadScreenProps = {}) {
           console.log('New song');
           // Handle new song creation
         }}
-      />
+      /> */}
     </View>
   );
 }

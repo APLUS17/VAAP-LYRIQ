@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useLyricStore, LyricSection as LyricSectionType } from '../state/lyricStore';
+import { AIPopover } from './AIPopover';
 import { cn } from '../utils/cn';
 
 interface LyricSectionProps {
@@ -10,104 +12,85 @@ interface LyricSectionProps {
 
 export function LyricSection({ section }: LyricSectionProps) {
   const { updateSection, toggleCollapse, removeSection } = useLyricStore();
+  const [showAIPopover, setShowAIPopover] = useState(false);
+  const [aiPosition, setAIPosition] = useState({ x: 0, y: 0 });
+  const aiButtonRef = useRef<View>(null);
 
-  // Color scheme for different section types
-  const getSectionColors = (type: string) => {
-    switch (type) {
-      case 'verse':
-        return {
-          bg: 'bg-blue-50/50',
-          border: 'border-blue-100',
-          accent: '#3B82F6',
-        };
-      case 'chorus':
-        return {
-          bg: 'bg-purple-50/50',
-          border: 'border-purple-100',
-          accent: '#8B5CF6',
-        };
-      case 'bridge':
-        return {
-          bg: 'bg-emerald-50/50',
-          border: 'border-emerald-100',
-          accent: '#10B981',
-        };
-      default:
-        return {
-          bg: 'bg-gray-50/50',
-          border: 'border-gray-100',
-          accent: '#6B7280',
-        };
+  const handleAIPress = () => {
+    aiButtonRef.current?.measureInWindow((x, y, width, height) => {
+      setAIPosition({ x: x + width / 2, y: y + height });
+      setShowAIPopover(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    });
+  };
+
+  const handleAISuggestion = (suggestion: string) => {
+    if (section.content.trim()) {
+      updateSection(section.id, section.content + '\n' + suggestion);
+    } else {
+      updateSection(section.id, suggestion);
     }
   };
 
-  const colors = getSectionColors(section.type);
-
   return (
-    <View 
-      className={cn(
-        "mb-6 rounded-2xl border shadow-sm shadow-black/5",
-        colors.bg,
-        colors.border
-      )}
-      style={{
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
-      }}
-    >
+    <View className="mb-6">
       {/* Section Header */}
       <Pressable
         onPress={() => toggleCollapse(section.id)}
-        className="flex-row items-center justify-between px-5 py-4"
+        className="flex-row items-center justify-between mb-3"
       >
-        <Text 
-          className="text-xl font-light text-gray-900"
-          style={{ 
-            fontFamily: 'Georgia',
-            fontWeight: '300',
-            letterSpacing: 0.3,
-          }}
-        >
-          {section.title}
-        </Text>
+        <View className="flex-row items-center">
+          <Text className="text-lg font-medium text-gray-900 mr-3">
+            {section.title}
+          </Text>
+          <Pressable
+            ref={aiButtonRef}
+            onPress={handleAIPress}
+            className="p-1.5 rounded-full"
+            style={{ backgroundColor: '#F3F4F6' }}
+          >
+            <Ionicons name="sparkles" size={14} color="#6366F1" />
+          </Pressable>
+        </View>
         <View className="flex-row items-center">
           <Pressable
             onPress={() => removeSection(section.id)}
-            className="mr-3 p-2 rounded-full"
-            style={{ backgroundColor: `${colors.accent}10` }}
+            className="mr-3 p-1"
           >
-            <Ionicons name="trash-outline" size={16} color={colors.accent} />
+            <Ionicons name="trash-outline" size={16} color="#6B7280" />
           </Pressable>
           <Ionicons
             name={section.collapsed ? "chevron-down" : "chevron-up"}
-            size={22}
-            color={colors.accent}
+            size={20}
+            color="#6B7280"
           />
         </View>
       </Pressable>
 
       {/* Section Content */}
       {!section.collapsed && (
-        <View className="px-5 pb-5">
-          <TextInput
-            multiline
-            placeholder={`Write your ${section.type} here...`}
-            value={section.content}
-            onChangeText={(text) => updateSection(section.id, text)}
-            className="bg-white/80 rounded-xl p-4 min-h-[120px] text-base leading-7"
-            style={{
-              fontFamily: 'System',
-              fontWeight: '400',
-              textAlignVertical: 'top',
-              fontSize: 16,
-              lineHeight: 24,
-            }}
-            placeholderTextColor="#9CA3AF"
-          />
-        </View>
+        <TextInput
+          multiline
+          placeholder={`Write your ${section.type} here...`}
+          value={section.content}
+          onChangeText={(text) => updateSection(section.id, text)}
+          className="bg-white border border-gray-200 rounded-lg p-4 min-h-[100px] text-base leading-6"
+          style={{
+            fontFamily: 'Georgia',
+            textAlignVertical: 'top',
+          }}
+          placeholderTextColor="#9CA3AF"
+        />
       )}
+
+      <AIPopover
+        visible={showAIPopover}
+        onClose={() => setShowAIPopover(false)}
+        position={aiPosition}
+        sectionContent={section.content}
+        sectionType={section.type}
+        onSuggestion={handleAISuggestion}
+      />
     </View>
   );
 }

@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, ScrollView, Text, Pressable, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLyricStore } from '../state/lyricStore';
 import { LyricSection } from '../components/LyricSection';
-import { AIAssistantButton } from '../components/AIAssistantButton';
-import { AIAssistantModal } from '../components/AIAssistantModal';
+import { KeyboardToolbar } from '../components/KeyboardToolbar';
 
 export function LyricPadScreen() {
   const insets = useSafeAreaInsets();
-  const { sections, addSection } = useLyricStore();
+  const { sections, addSection, updateSection } = useLyricStore();
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   const sectionTypes = [
     { type: 'verse' as const, label: 'Verse', icon: 'musical-note' },
@@ -20,36 +20,18 @@ export function LyricPadScreen() {
   return (
     <View className="flex-1 bg-white">
       <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ 
-          paddingHorizontal: 24,
-          paddingTop: insets.top + 20,
-          paddingBottom: 100 
-        }}
+        className="flex-1 px-6"
+        style={{ paddingTop: insets.top + 20 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         onScrollBeginDrag={() => Keyboard.dismiss()}
       >
         {/* Header */}
-        <View className="mb-10">
-          <Text 
-            className="text-3xl text-gray-900 mb-3"
-            style={{ 
-              fontFamily: 'Georgia',
-              fontWeight: '300',
-              letterSpacing: -0.5,
-            }}
-          >
+        <View className="mb-8">
+          <Text className="text-2xl font-light text-gray-900 mb-2">
             Lyric Pad
           </Text>
-          <Text 
-            className="text-sm text-gray-600"
-            style={{
-              fontFamily: 'System',
-              fontWeight: '500',
-              letterSpacing: 0.2,
-            }}
-          >
+          <Text className="text-sm text-gray-500">
             {sections.length === 0 
               ? "Start writing your song" 
               : `${sections.length} section${sections.length !== 1 ? 's' : ''}`
@@ -63,98 +45,54 @@ export function LyricPadScreen() {
         ))}
 
         {/* Add Section Buttons */}
-        <View className="mb-10">
-          <Text 
-            className="text-sm text-gray-600 mb-4"
-            style={{
-              fontFamily: 'System',
-              fontWeight: '600',
-              letterSpacing: 0.3,
-              textTransform: 'uppercase',
-            }}
-          >
+        <View className="mb-8">
+          <Text className="text-sm font-medium text-gray-600 mb-3">
             Add Section
           </Text>
           <View className="flex-row flex-wrap gap-3">
-            {sectionTypes.map(({ type, label, icon }) => {
-              const getButtonColors = (buttonType: string) => {
-                switch (buttonType) {
-                  case 'verse':
-                    return { bg: '#EFF6FF', border: '#DBEAFE', text: '#1D4ED8', icon: '#3B82F6' };
-                  case 'chorus':
-                    return { bg: '#FAF5FF', border: '#E9D5FF', text: '#7C3AED', icon: '#8B5CF6' };
-                  case 'bridge':
-                    return { bg: '#ECFDF5', border: '#D1FAE5', text: '#059669', icon: '#10B981' };
-                  default:
-                    return { bg: '#F9FAFB', border: '#E5E7EB', text: '#374151', icon: '#6B7280' };
-                }
-              };
-              
-              const colors = getButtonColors(type);
-              
-              return (
-                <Pressable
-                  key={type}
-                  onPress={() => addSection(type)}
-                  className="flex-row items-center rounded-2xl px-5 py-3.5 border"
-                  style={{ 
-                    backgroundColor: colors.bg,
-                    borderColor: colors.border,
-                    shadowOffset: { width: 0, height: 1 },
-                    shadowOpacity: 0.05,
-                    shadowRadius: 4,
-                    elevation: 1,
-                  }}
-                >
-                  <Ionicons name={icon as any} size={18} color={colors.icon} />
-                  <Text 
-                    className="ml-2.5 text-sm"
-                    style={{
-                      fontFamily: 'System',
-                      fontWeight: '600',
-                      color: colors.text,
-                    }}
-                  >
-                    + {label}
-                  </Text>
-                </Pressable>
-              );
-            })}
+            {sectionTypes.map(({ type, label, icon }) => (
+              <Pressable
+                key={type}
+                onPress={() => addSection(type)}
+                className="flex-row items-center bg-gray-50 border border-gray-200 rounded-full px-4 py-3"
+              >
+                <Ionicons name={icon as any} size={16} color="#6B7280" />
+                <Text className="ml-2 text-sm text-gray-700">
+                  + {label}
+                </Text>
+              </Pressable>
+            ))}
           </View>
         </View>
 
         {/* Empty State */}
         {sections.length === 0 && (
-          <View className="items-center justify-center py-16">
-            <View 
-              className="w-20 h-20 rounded-full bg-gray-50 items-center justify-center mb-6"
-              style={{
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.05,
-                shadowRadius: 8,
-                elevation: 2,
-              }}
-            >
-              <Ionicons name="musical-notes" size={32} color="#9CA3AF" />
-            </View>
-            <Text 
-              className="text-gray-500 text-center text-base leading-6"
-              style={{
-                fontFamily: 'System',
-                fontWeight: '400',
-                maxWidth: 240,
-              }}
-            >
+          <View className="items-center justify-center py-12">
+            <Ionicons name="musical-notes" size={64} color="#E5E7EB" />
+            <Text className="text-gray-400 text-center mt-4 text-base">
               Your lyrics will appear here.{'\n'}Tap a button above to get started.
             </Text>
           </View>
         )}
 
+        {/* Bottom spacing */}
+        <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* AI Assistant */}
-      <AIAssistantButton />
-      <AIAssistantModal />
+      {/* Keyboard Toolbar */}
+      {activeSection && (
+        <KeyboardToolbar
+          sectionContent={sections.find(s => s.id === activeSection)?.content || ''}
+          sectionType={sections.find(s => s.id === activeSection)?.type || 'verse'}
+          onSuggestion={(text) => {
+            const section = sections.find(s => s.id === activeSection);
+            if (section) {
+              const newContent = section.content ? section.content + '\n' + text : text;
+              updateSection(activeSection, newContent);
+            }
+          }}
+        />
+      )}
     </View>
   );
 }

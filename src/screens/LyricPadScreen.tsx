@@ -8,7 +8,11 @@ import { KeyboardToolbar } from '../components/KeyboardToolbar';
 import { SimpleAIButton } from '../components/SimpleAIButton';
 import { Sidebar } from '../components/Sidebar';
 
-export function LyricPadScreen() {
+interface LyricPadScreenProps {
+  onBack?: () => void;
+}
+
+export function LyricPadScreen({ onBack }: LyricPadScreenProps = {}) {
   const insets = useSafeAreaInsets();
   const { sections, addSection, updateSection } = useLyricStore();
   const [activeSection, setActiveSection] = useState<string | null>(null);

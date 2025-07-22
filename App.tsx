@@ -1,8 +1,22 @@
+import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
-import { View, Text } from "react-native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { HomeScreen } from "./src/screens/HomeScreen";
 import { LyricPadScreen } from "./src/screens/LyricPadScreen";
+
+const Stack = createNativeStackNavigator();
+
+function HomeScreenWrapper({ navigation }: any) {
+  return (
+    <HomeScreen onNavigateToLyrics={() => navigation.navigate('LyricPad')} />
+  );
+}
+
+function LyricPadScreenWrapper() {
+  return <LyricPadScreen />;
+}
 
 /*
 IMPORTANT NOTICE: DO NOT REMOVE
@@ -29,7 +43,15 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-        <LyricPadScreen />
+        <Stack.Navigator 
+          screenOptions={{ 
+            headerShown: false,
+            animation: 'slide_from_right'
+          }}
+        >
+          <Stack.Screen name="Home" component={HomeScreenWrapper} />
+          <Stack.Screen name="LyricPad" component={LyricPadScreenWrapper} />
+        </Stack.Navigator>
         <StatusBar style="dark" />
       </NavigationContainer>
     </SafeAreaProvider>

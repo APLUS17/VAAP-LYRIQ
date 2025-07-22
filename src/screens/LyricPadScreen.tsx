@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLyricStore } from '../state/lyricStore';
 import { LyricSection } from '../components/LyricSection';
 import { KeyboardToolbar } from '../components/KeyboardToolbar';
-import { SimpleAIButton } from '../components/SimpleAIButton';
 
 export function LyricPadScreen() {
   const insets = useSafeAreaInsets();
@@ -44,11 +43,6 @@ export function LyricPadScreen() {
         {sections.map((section) => (
           <LyricSection key={section.id} section={section} />
         ))}
-
-        {/* AI Assistant */}
-        <View className="mb-6">
-          <SimpleAIButton />
-        </View>
 
         {/* Add Section Buttons */}
         <View className="mb-8">

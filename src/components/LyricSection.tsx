@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useLyricStore, LyricSection as LyricSectionType } from '../state/lyricStore';
+import { InlineAIPopover } from './InlineAIPopover';
 import { cn } from '../utils/cn';
 
 interface LyricSectionProps {
@@ -10,6 +12,26 @@ interface LyricSectionProps {
 
 export function LyricSection({ section }: LyricSectionProps) {
   const { updateSection, toggleCollapse, removeSection } = useLyricStore();
+  const [showAIPopover, setShowAIPopover] = useState(false);
+  const [aiPosition, setAIPosition] = useState({ x: 0, y: 0 });
+  const aiButtonRef = useRef<View>(null);
+
+  const handleAIPress = () => {
+    aiButtonRef.current?.measureInWindow((x, y, width, height) => {
+      setAIPosition({ x: x + width / 2, y: y + height });
+      setShowAIPopover(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    });
+  };
+
+  const handleAISuggestion = (suggestion: string) => {
+    if (section.content.trim()) {
+      updateSection(section.id, section.content + '\n' + suggestion);
+    } else {
+      updateSection(section.id, suggestion);
+    }
+    setShowAIPopover(false);
+  };
 
   return (
     <View className="mb-6">
@@ -18,9 +40,19 @@ export function LyricSection({ section }: LyricSectionProps) {
         onPress={() => toggleCollapse(section.id)}
         className="flex-row items-center justify-between mb-3"
       >
-        <Text className="text-lg font-medium text-gray-900">
-          {section.title}
-        </Text>
+        <View className="flex-row items-center">
+          <Text className="text-lg font-medium text-gray-900 mr-3">
+            {section.title}
+          </Text>
+          <Pressable
+            ref={aiButtonRef}
+            onPress={handleAIPress}
+            className="p-1.5 rounded-full"
+            style={{ backgroundColor: '#F3F4F6' }}
+          >
+            <Ionicons name="sparkles" size={14} color="#6366F1" />
+          </Pressable>
+        </View>
         <View className="flex-row items-center">
           <Pressable
             onPress={() => removeSection(section.id)}
@@ -51,6 +83,15 @@ export function LyricSection({ section }: LyricSectionProps) {
           placeholderTextColor="#9CA3AF"
         />
       )}
+
+      <InlineAIPopover
+        visible={showAIPopover}
+        onClose={() => setShowAIPopover(false)}
+        position={aiPosition}
+        sectionContent={section.content}
+        sectionType={section.type}
+        onSuggestion={handleAISuggestion}
+      />
     </View>
   );
 }

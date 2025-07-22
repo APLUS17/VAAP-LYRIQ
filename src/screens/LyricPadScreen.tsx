@@ -18,8 +18,12 @@ export function LyricPadScreen() {
   return (
     <View className="flex-1 bg-white">
       <ScrollView
-        className="flex-1 px-6"
-        style={{ paddingTop: insets.top + 20 }}
+        className="flex-1"
+        contentContainerStyle={{ 
+          paddingHorizontal: 24,
+          paddingTop: insets.top + 20,
+          paddingBottom: 100 
+        }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         onScrollBeginDrag={() => Keyboard.dismiss()}
@@ -73,8 +77,6 @@ export function LyricPadScreen() {
           </View>
         )}
 
-        {/* Bottom spacing for keyboard */}
-        <View style={{ height: 100 }} />
       </ScrollView>
     </View>
   );

@@ -29,14 +29,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-        <View className="flex-1 bg-white justify-center items-center">
-          <Text className="text-2xl font-bold text-gray-900 mb-4">
-            Lyric Writer App
-          </Text>
-          <Text className="text-gray-600">
-            Testing basic setup...
-          </Text>
-        </View>
+        <LyricPadScreen />
         <StatusBar style="dark" />
       </NavigationContainer>
     </SafeAreaProvider>

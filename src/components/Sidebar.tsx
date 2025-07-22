@@ -52,8 +52,6 @@ export function Sidebar({ visible, onClose, onSelectTool, onSelectProject, onNew
 
   const tools = [
     { id: 'mumbl', name: 'MUMBL', icon: '🎙️', description: 'Auto-humming & melody gen' },
-    { id: 'writer', name: 'WRITER', icon: '✍️', description: 'Lyrics editor & assistant' },
-    { id: 'muse', name: 'MUSE', icon: '🧠', description: 'File & project organizer' },
   ];
 
   const projects = [
@@ -62,12 +60,7 @@ export function Sidebar({ visible, onClose, onSelectTool, onSelectProject, onNew
     { id: 'baes', name: 'BAES STUFF', lastEdited: '2 weeks ago' },
   ];
 
-  const songs = [
-    { id: 'tokyo', name: 'Lost in Tokyo', preview: 'Neon lights and midnight dreams...', starred: true },
-    { id: 'untitled', name: 'Untitled Beat', preview: 'Heavy bass and...' },
-    { id: 'midnight', name: 'Midnight Loops', preview: 'Dancing through the...' },
-    { id: 'summer', name: 'Summer Vibes', preview: 'Golden hour feelings...' },
-  ];
+  const songs: any[] = [];
 
   const filteredSongs = songs.filter(song => 
     song.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -218,25 +211,13 @@ export function Sidebar({ visible, onClose, onSelectTool, onSelectProject, onNew
                 <Text className="text-blue-500 font-medium ml-3">New Song</Text>
               </Pressable>
 
-              {filteredSongs.map((song) => (
-                <Pressable
-                  key={song.id}
-                  onPress={onClose}
-                  className="p-3 rounded-lg mb-2 active:bg-gray-700"
-                >
-                  <View className="flex-row items-start justify-between">
-                    <View className="flex-1">
-                      <Text className="text-white font-medium mb-1">{song.name}</Text>
-                      <Text className="text-gray-400 text-sm" numberOfLines={1}>
-                        {song.preview}
-                      </Text>
-                    </View>
-                    {song.starred && (
-                      <Text className="text-yellow-500 ml-2">⭐</Text>
-                    )}
-                  </View>
-                </Pressable>
-              ))}
+              {filteredSongs.length === 0 && (
+                <View className="p-4">
+                  <Text className="text-gray-400 text-center text-sm">
+                    No songs yet. Create your first song!
+                  </Text>
+                </View>
+              )}
             </View>
           </ScrollView>
 

@@ -5,11 +5,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLyricStore } from '../state/lyricStore';
 import { LyricSection } from '../components/LyricSection';
 import { KeyboardToolbar } from '../components/KeyboardToolbar';
+import { SimpleAIButton } from '../components/SimpleAIButton';
+import { Sidebar } from '../components/Sidebar';
 
 export function LyricPadScreen() {
   const insets = useSafeAreaInsets();
   const { sections, addSection, updateSection } = useLyricStore();
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   const sectionTypes = [
     { type: 'verse' as const, label: 'Verse', icon: 'musical-note' },
@@ -27,16 +30,25 @@ export function LyricPadScreen() {
         onScrollBeginDrag={() => Keyboard.dismiss()}
       >
         {/* Header */}
-        <View className="mb-8">
-          <Text className="text-2xl font-light text-gray-900 mb-2">
-            Lyric Pad
-          </Text>
-          <Text className="text-sm text-gray-500">
-            {sections.length === 0 
-              ? "Start writing your song" 
-              : `${sections.length} section${sections.length !== 1 ? 's' : ''}`
-            }
-          </Text>
+        <View className="flex-row items-center justify-between mb-8">
+          <Pressable
+            onPress={() => setShowSidebar(true)}
+            className="p-2 -ml-2 rounded-lg"
+          >
+            <Ionicons name="menu" size={24} color="#1F2937" />
+          </Pressable>
+          
+          <View className="flex-1 ml-4">
+            <Text className="text-2xl font-light text-gray-900 mb-1">
+              Lyric Pad
+            </Text>
+            <Text className="text-sm text-gray-500">
+              {sections.length === 0 
+                ? "Start writing your song" 
+                : `${sections.length} section${sections.length !== 1 ? 's' : ''}`
+              }
+            </Text>
+          </View>
         </View>
 
         {/* Sections */}
@@ -93,6 +105,24 @@ export function LyricPadScreen() {
           }}
         />
       )}
+
+      {/* Sidebar */}
+      <Sidebar
+        visible={showSidebar}
+        onClose={() => setShowSidebar(false)}
+        onSelectTool={(tool) => {
+          console.log('Selected tool:', tool);
+          // Handle tool selection
+        }}
+        onSelectProject={(project) => {
+          console.log('Selected project:', project);
+          // Handle project selection
+        }}
+        onNewSong={() => {
+          console.log('New song');
+          // Handle new song creation
+        }}
+      />
     </View>
   );
 }

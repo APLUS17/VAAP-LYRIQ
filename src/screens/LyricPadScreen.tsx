@@ -4,8 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLyricStore } from '../state/lyricStore';
 import { LyricSection } from '../components/LyricSection';
-import { KeyboardToolbar } from '../components/KeyboardToolbar';
-import { SimpleAIButton } from '../components/SimpleAIButton';
+// import { KeyboardToolbar } from '../components/KeyboardToolbar';
+// import { SimpleAIButton } from '../components/SimpleAIButton';
 import { Sidebar } from '../components/Sidebar';
 
 interface LyricPadScreenProps {
@@ -95,8 +95,8 @@ export function LyricPadScreen({ onBack }: LyricPadScreenProps = {}) {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Keyboard Toolbar */}
-      {activeSection && (
+      {/* Keyboard Toolbar - Temporarily disabled */}
+      {/* {activeSection && (
         <KeyboardToolbar
           sectionContent={sections.find(s => s.id === activeSection)?.content || ''}
           sectionType={sections.find(s => s.id === activeSection)?.type || 'verse'}
@@ -108,7 +108,7 @@ export function LyricPadScreen({ onBack }: LyricPadScreenProps = {}) {
             }
           }}
         />
-      )}
+      )} */
 
       {/* Sidebar */}
       <Sidebar

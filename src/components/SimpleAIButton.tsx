@@ -11,20 +11,37 @@ export function SimpleAIButton() {
   const handleAIHelp = async () => {
     setIsLoading(true);
     
+    // Simulate AI thinking time
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
     try {
       const currentLyrics = sections
         .map(section => `${section.title}:\n${section.content}`)
         .join('\n\n')
         .trim();
 
-      const prompt = currentLyrics 
-        ? `Help me write the next line for this song:\n\n${currentLyrics}`
-        : "Help me start writing song lyrics. Give me a simple first line for a verse.";
+      // Mock AI responses for testing
+      const mockResponses = {
+        noLyrics: [
+          "Walking down this empty street tonight",
+          "Stars are calling out my name",
+          "Lost in thoughts that never fade",
+          "Dancing with the morning light"
+        ],
+        withLyrics: [
+          "But I'll keep moving on",
+          "Through the darkness and the pain",
+          "Finding hope in every breath",
+          "Like a river flowing free",
+          "With the music in my soul"
+        ]
+      };
 
-      const response = await getGrokChatResponse(prompt);
+      const responseOptions = currentLyrics ? mockResponses.withLyrics : mockResponses.noLyrics;
+      const randomResponse = responseOptions[Math.floor(Math.random() * responseOptions.length)];
       
-      // Show the response in an alert for now
-      Alert.alert("AI Suggestion", response.content, [
+      // Show the response in an alert
+      Alert.alert("AI Suggestion", randomResponse + "\n\n(Mock response - APIs temporarily unavailable)", [
         { text: "Cancel", style: "cancel" },
         { 
           text: "Add to Lyrics", 
@@ -35,14 +52,14 @@ export function SimpleAIButton() {
               setTimeout(() => {
                 const newSections = useLyricStore.getState().sections;
                 if (newSections.length > 0) {
-                  updateSection(newSections[0].id, response.content);
+                  updateSection(newSections[0].id, randomResponse);
                 }
               }, 100);
             } else {
               const lastSection = sections[sections.length - 1];
               const newContent = lastSection.content 
-                ? lastSection.content + '\n' + response.content
-                : response.content;
+                ? lastSection.content + '\n' + randomResponse
+                : randomResponse;
               updateSection(lastSection.id, newContent);
             }
           }

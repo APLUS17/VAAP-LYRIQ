@@ -4,6 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLyricStore } from '../state/lyricStore';
 import { LyricSection } from '../components/LyricSection';
+import { AIAssistantButton } from '../components/AIAssistantButton';
+import { AIAssistantModal } from '../components/AIAssistantModal';
 
 export function LyricPadScreen() {
   const insets = useSafeAreaInsets();
@@ -149,6 +151,10 @@ export function LyricPadScreen() {
         )}
 
       </ScrollView>
+
+      {/* AI Assistant */}
+      <AIAssistantButton />
+      <AIAssistantModal />
     </View>
   );
 }

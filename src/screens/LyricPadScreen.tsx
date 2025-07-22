@@ -110,8 +110,8 @@ export function LyricPadScreen({ onBack }: LyricPadScreenProps = {}) {
         />
       )} */
 
-      {/* Sidebar - Temporarily disabled */}
-      {/* <Sidebar
+      {/* Sidebar */}
+      <Sidebar
         visible={showSidebar}
         onClose={() => setShowSidebar(false)}
         onSelectTool={(tool) => {
@@ -126,7 +126,7 @@ export function LyricPadScreen({ onBack }: LyricPadScreenProps = {}) {
           console.log('New song');
           // Handle new song creation
         }}
-      /> */}
+      />
     </View>
   );
 }

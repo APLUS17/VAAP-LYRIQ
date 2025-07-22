@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
+import { View, Text } from "react-native";
 import { LyricPadScreen } from "./src/screens/LyricPadScreen";
 
 /*
@@ -28,7 +29,14 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-        <LyricPadScreen />
+        <View className="flex-1 bg-white justify-center items-center">
+          <Text className="text-2xl font-bold text-gray-900 mb-4">
+            Lyric Writer App
+          </Text>
+          <Text className="text-gray-600">
+            Testing basic setup...
+          </Text>
+        </View>
         <StatusBar style="dark" />
       </NavigationContainer>
     </SafeAreaProvider>

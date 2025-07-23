@@ -8,6 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLyricStore } from "./src/state/lyricStore";
 import { LyricSection } from "./src/components/LyricSection";
 import { SectionSelectionModal } from "./src/components/SectionSelectionModal";
+import { Sidebar } from "./src/components/Sidebar";
 
 /*
 IMPORTANT NOTICE: DO NOT REMOVE
@@ -33,6 +34,7 @@ const openai_api_key = Constants.expoConfig.extra.apikey;
 function MainScreen() {
   const insets = useSafeAreaInsets();
   const [showSectionModal, setShowSectionModal] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<'main' | 'lyricpad'>('main');
   const { sections, addSection } = useLyricStore();
 
@@ -132,13 +134,14 @@ function MainScreen() {
     <View className="flex-1 bg-gray-200" style={{ paddingTop: insets.top }}>
       {/* Top Navigation */}
       <View className="flex-row items-center justify-between px-6 py-4">
-        <Pressable className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center">
-          <Ionicons name="home" size={20} color="white" />
+        <Pressable 
+          onPress={() => setShowSidebar(true)}
+          className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center"
+        >
+          <Ionicons name="menu" size={20} color="white" />
         </Pressable>
 
-        <Pressable className="w-12 h-12 bg-gray-600 rounded-full items-center justify-center">
-          <Ionicons name="document-text" size={20} color="white" />
-        </Pressable>
+        <View className="flex-1" />
 
         <Pressable className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center">
           <Ionicons name="settings" size={20} color="white" />
@@ -172,6 +175,24 @@ function MainScreen() {
         visible={showSectionModal}
         onClose={() => setShowSectionModal(false)}
         onSelectSection={handleCreateSection}
+      />
+
+      {/* Sidebar */}
+      <Sidebar
+        visible={showSidebar}
+        onClose={() => setShowSidebar(false)}
+        onSelectTool={(tool) => {
+          console.log('Selected tool:', tool);
+          setShowSidebar(false);
+        }}
+        onSelectProject={(project) => {
+          console.log('Selected project:', project);
+          setShowSidebar(false);
+        }}
+        onNewSong={() => {
+          setShowSectionModal(true);
+          setShowSidebar(false);
+        }}
       />
     </View>
   );

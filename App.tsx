@@ -1,13 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { View, Text, Pressable, ScrollView, Keyboard } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withRepeat,
+  withSequence,
+  interpolate,
+} from 'react-native-reanimated';
 import { useLyricStore } from "./src/state/lyricStore";
 import { LyricSection } from "./src/components/LyricSection";
 import { SectionSelectionModal } from "./src/components/SectionSelectionModal";
+import { ShimmeringTitle } from "./src/components/ShimmeringTitle";
 import { Sidebar } from "./src/components/Sidebar";
 
 /*
@@ -150,9 +159,7 @@ function MainScreen() {
 
       {/* Main Content */}
       <View className="flex-1 items-center justify-center px-6">
-        <Text className="text-5xl font-light text-gray-800 mb-4 text-center leading-tight">
-          Lyriq
-        </Text>
+        <ShimmeringTitle />
         
         <View className="mt-24">
           <Pressable

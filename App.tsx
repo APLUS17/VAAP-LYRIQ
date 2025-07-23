@@ -151,7 +151,7 @@ function MainScreen() {
       {/* Main Content */}
       <View className="flex-1 items-center justify-center px-6">
         <Text className="text-5xl font-light text-gray-800 mb-4 text-center leading-tight">
-          Lyrics + Structure
+          Lyriq
         </Text>
         
         <View className="mt-24">

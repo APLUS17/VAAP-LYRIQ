@@ -16,6 +16,7 @@ import Animated, {
 import { useLyricStore } from "./src/state/lyricStore";
 import { LyricSection } from "./src/components/LyricSection";
 import { SectionSelectionModal } from "./src/components/SectionSelectionModal";
+import { ShimmerText } from "./src/components/ShimmerText";
 import { ShimmeringTitle } from "./src/components/ShimmeringTitle";
 import { Sidebar } from "./src/components/Sidebar";
 
@@ -159,7 +160,7 @@ function MainScreen() {
 
       {/* Main Content */}
       <View className="flex-1 items-center justify-center px-6">
-        <ShimmeringTitle />
+        <ShimmerText />
         
         <View className="mt-24">
           <Pressable

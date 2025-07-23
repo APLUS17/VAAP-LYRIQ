@@ -15,7 +15,7 @@ function MainScreen() {
           Lyriq
         </Text>
         <Text className="text-gray-600 text-center mt-6 text-base">
-          Loading issue fixed - app is working!
+          Simple version - working!
         </Text>
       </View>
     </View>

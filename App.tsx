@@ -8,6 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLyricStore } from "./src/state/lyricStore";
 import { LyricSection } from "./src/components/LyricSection";
 import { SectionSelectionModal } from "./src/components/SectionSelectionModal";
+import { LibraryScreen } from "./src/components/LibraryScreen";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -84,7 +85,7 @@ function ShimmerText() {
 function MainScreen() {
   const insets = useSafeAreaInsets();
   const [showSectionModal, setShowSectionModal] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState<'main' | 'lyricpad'>('main');
+  const [currentScreen, setCurrentScreen] = useState<'main' | 'lyricpad' | 'library'>('main');
   const [showSidebar, setShowSidebar] = useState(false);
   const { sections, addSection } = useLyricStore();
 
@@ -104,6 +105,22 @@ function MainScreen() {
     setShowSectionModal(false);
     setCurrentScreen('lyricpad');
   };
+
+  if (currentScreen === 'library') {
+    return (
+      <LibraryScreen
+        onBack={() => setCurrentScreen('main')}
+        onOpenLyric={(lyricId) => {
+          console.log('Opening lyric:', lyricId);
+          setCurrentScreen('lyricpad');
+        }}
+        onOpenMumble={() => {
+          console.log('Opening mumble recorder');
+          // We can add mumble screen later
+        }}
+      />
+    );
+  }
 
   if (currentScreen === 'lyricpad') {
     return (
@@ -193,8 +210,11 @@ function MainScreen() {
 
         <View className="flex-1" />
 
-        <Pressable className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center">
-          <Ionicons name="settings" size={20} color="white" />
+        <Pressable 
+          onPress={() => setCurrentScreen('library')}
+          className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center"
+        >
+          <Ionicons name="library" size={20} color="white" />
         </Pressable>
       </View>
 

@@ -16,6 +16,7 @@ import Animated, {
 import { useLyricStore } from "./src/state/lyricStore";
 import { LyricSection } from "./src/components/LyricSection";
 import { SectionSelectionModal } from "./src/components/SectionSelectionModal";
+import { MumbleRecorder } from "./src/components/MumbleRecorder";
 import { ShimmerText } from "./src/components/ShimmerText";
 import { ShimmeringTitle } from "./src/components/ShimmeringTitle";
 import { Sidebar } from "./src/components/Sidebar";
@@ -45,7 +46,7 @@ function MainScreen() {
   const insets = useSafeAreaInsets();
   const [showSectionModal, setShowSectionModal] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState<'main' | 'lyricpad'>('main');
+  const [currentScreen, setCurrentScreen] = useState<'main' | 'lyricpad' | 'mumble'>('main');
   const { sections, addSection } = useLyricStore();
 
   const sectionTypes = [
@@ -64,6 +65,10 @@ function MainScreen() {
     setShowSectionModal(false);
     setCurrentScreen('lyricpad');
   };
+
+  if (currentScreen === 'mumble') {
+    return <MumbleRecorder />;
+  }
 
   if (currentScreen === 'lyricpad') {
     return (
@@ -162,18 +167,27 @@ function MainScreen() {
       <View className="flex-1 items-center justify-center px-6">
         <ShimmerText />
         
-        <View className="mt-24">
+        <View className="mt-24 items-center">
           <Pressable
             onPress={() => setShowSectionModal(true)}
-            className="bg-gray-800 px-8 py-4 rounded-full"
+            className="bg-gray-800 px-8 py-4 rounded-full mb-4"
           >
             <Text className="text-white font-medium text-lg">
               CREATE SONG SECTION
             </Text>
           </Pressable>
           
-          <Text className="text-gray-600 text-center mt-6 text-base">
-            TAP 'CREATE SONG SECTION'{'\n'}TO START WRITING
+          <Pressable
+            onPress={() => setCurrentScreen('mumble')}
+            className="bg-orange-500 px-8 py-4 rounded-full mb-6"
+          >
+            <Text className="text-white font-medium text-lg">
+              MUMBLE RECORDER
+            </Text>
+          </Pressable>
+          
+          <Text className="text-gray-600 text-center text-base">
+            TAP 'CREATE SONG SECTION' TO START WRITING{'\n'}OR 'MUMBLE RECORDER' TO CAPTURE IDEAS
           </Text>
         </View>
       </View>

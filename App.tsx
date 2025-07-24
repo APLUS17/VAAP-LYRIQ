@@ -325,9 +325,8 @@ function EmptySidebar({ visible, onClose }) {
   );
 }
 
-// Voice Recording Component
+// Voice Recording Component (Mock for now)
 function VoiceRecorder() {
-  const [recording, setRecording] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const timerRef = React.useRef(null);
@@ -335,90 +334,51 @@ function VoiceRecorder() {
   const recordButtonScale = useSharedValue(1);
   const pulseScale = useSharedValue(1);
 
-  React.useEffect(() => {
-    setupAudio();
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, []);
-
-  const setupAudio = async () => {
-    try {
-      await Audio.requestPermissionsAsync();
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-    } catch (error) {
-      console.error('Failed to setup audio:', error);
-    }
-  };
-
-  const startRecording = async () => {
-    try {
-      const { recording: newRecording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-      
-      setRecording(newRecording);
-      setIsRecording(true);
-      setRecordingTime(0);
-      
-      // Start timer
-      timerRef.current = setInterval(() => {
-        setRecordingTime((prev) => prev + 1);
-      }, 1000);
-      
-      // Start animations
-      recordButtonScale.value = withRepeat(
-        withSequence(
-          withTiming(1.1, { duration: 500 }),
-          withTiming(1, { duration: 500 })
-        ),
-        -1,
-        false
-      );
-      
-      pulseScale.value = withRepeat(
-        withSequence(
-          withTiming(1.5, { duration: 1000 }),
-          withTiming(1, { duration: 1000 })
-        ),
-        -1,
-        false
-      );
-    } catch (error) {
-      console.error('Failed to start recording:', error);
-    }
-  };
-
-  const stopRecording = async () => {
-    if (!recording) return;
+  const startRecording = () => {
+    setIsRecording(true);
+    setRecordingTime(0);
     
-    try {
-      await recording.stopAndUnloadAsync();
-      setRecording(null);
-      setIsRecording(false);
-      
-      // Clear timer
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-      
-      // Stop animations
-      cancelAnimation(recordButtonScale);
-      cancelAnimation(pulseScale);
-      recordButtonScale.value = withTiming(1);
-      pulseScale.value = withTiming(1);
-      
-      // Show success feedback
-      console.log('Recording saved!');
-    } catch (error) {
-      console.error('Failed to stop recording:', error);
+    // Start timer
+    timerRef.current = setInterval(() => {
+      setRecordingTime((prev) => prev + 1);
+    }, 1000);
+    
+    // Start animations
+    recordButtonScale.value = withRepeat(
+      withSequence(
+        withTiming(1.1, { duration: 500 }),
+        withTiming(1, { duration: 500 })
+      ),
+      -1,
+      false
+    );
+    
+    pulseScale.value = withRepeat(
+      withSequence(
+        withTiming(1.5, { duration: 1000 }),
+        withTiming(1, { duration: 1000 })
+      ),
+      -1,
+      false
+    );
+  };
+
+  const stopRecording = () => {
+    setIsRecording(false);
+    
+    // Clear timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
+    
+    // Stop animations
+    cancelAnimation(recordButtonScale);
+    cancelAnimation(pulseScale);
+    recordButtonScale.value = withTiming(1);
+    pulseScale.value = withTiming(1);
+    
+    console.log('Mock recording saved!');
   };
 
   const formatTime = (seconds) => {

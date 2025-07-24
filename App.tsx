@@ -5,11 +5,15 @@ import { NavigationContainer } from "@react-navigation/native";
 import { View, Text, Pressable, ScrollView, Keyboard, TextInput, Modal } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { Audio } from 'expo-av';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withSpring,
+  withRepeat,
+  withSequence,
+  cancelAnimation,
 } from 'react-native-reanimated';
 
 // Simple state management without Zustand for now
@@ -321,6 +325,176 @@ function EmptySidebar({ visible, onClose }) {
   );
 }
 
+// Voice Recording Component
+function VoiceRecorder() {
+  const [recording, setRecording] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const timerRef = React.useRef(null);
+  
+  const recordButtonScale = useSharedValue(1);
+  const pulseScale = useSharedValue(1);
+
+  React.useEffect(() => {
+    setupAudio();
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
+
+  const setupAudio = async () => {
+    try {
+      await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+    } catch (error) {
+      console.error('Failed to setup audio:', error);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const { recording: newRecording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      
+      setRecording(newRecording);
+      setIsRecording(true);
+      setRecordingTime(0);
+      
+      // Start timer
+      timerRef.current = setInterval(() => {
+        setRecordingTime((prev) => prev + 1);
+      }, 1000);
+      
+      // Start animations
+      recordButtonScale.value = withRepeat(
+        withSequence(
+          withTiming(1.1, { duration: 500 }),
+          withTiming(1, { duration: 500 })
+        ),
+        -1,
+        false
+      );
+      
+      pulseScale.value = withRepeat(
+        withSequence(
+          withTiming(1.5, { duration: 1000 }),
+          withTiming(1, { duration: 1000 })
+        ),
+        -1,
+        false
+      );
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+    }
+  };
+
+  const stopRecording = async () => {
+    if (!recording) return;
+    
+    try {
+      await recording.stopAndUnloadAsync();
+      setRecording(null);
+      setIsRecording(false);
+      
+      // Clear timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      
+      // Stop animations
+      cancelAnimation(recordButtonScale);
+      cancelAnimation(pulseScale);
+      recordButtonScale.value = withTiming(1);
+      pulseScale.value = withTiming(1);
+      
+      // Show success feedback
+      console.log('Recording saved!');
+    } catch (error) {
+      console.error('Failed to stop recording:', error);
+    }
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const recordButtonStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: recordButtonScale.value }],
+  }));
+
+  const pulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulseScale.value }],
+    opacity: pulseScale.value === 1 ? 0 : 0.3,
+  }));
+
+  return (
+    <View className="items-center">
+      {isRecording && (
+        <View className="mb-4">
+          <Text className="text-red-600 font-mono text-lg text-center">
+            REC {formatTime(recordingTime)}
+          </Text>
+        </View>
+      )}
+      
+      <View className="relative">
+        {/* Pulse Effect */}
+        {isRecording && (
+          <Animated.View
+            style={[
+              {
+                position: 'absolute',
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: '#EF4444',
+                top: -10,
+                left: -10,
+              },
+              pulseStyle,
+            ]}
+          />
+        )}
+        
+        {/* Record Button */}
+        <Animated.View style={recordButtonStyle}>
+          <Pressable
+            onPress={isRecording ? stopRecording : startRecording}
+            className="w-16 h-16 rounded-full items-center justify-center"
+            style={{
+              backgroundColor: isRecording ? '#DC2626' : '#EF4444',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <Ionicons
+              name={isRecording ? 'stop' : 'mic'}
+              size={24}
+              color="white"
+            />
+          </Pressable>
+        </Animated.View>
+      </View>
+      
+      <Text className="text-gray-600 text-sm mt-2 text-center">
+        {isRecording ? 'Tap to stop' : 'Voice note'}
+      </Text>
+    </View>
+  );
+}
+
 // Main App Component
 function MainScreen() {
   const insets = useSafeAreaInsets();
@@ -416,8 +590,13 @@ function MainScreen() {
             </View>
           )}
 
-          <View style={{ height: 100 }} />
+          <View style={{ height: 120 }} />
         </ScrollView>
+        
+        {/* Voice Recording Button */}
+        <View className="absolute bottom-0 left-0 right-0 items-center pb-8">
+          <VoiceRecorder />
+        </View>
       </View>
     );
   }

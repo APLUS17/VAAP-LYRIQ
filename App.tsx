@@ -256,10 +256,76 @@ function SectionSelectionModal({ visible, onClose, onSelectSection }) {
   );
 }
 
+// Empty Sidebar Component
+function EmptySidebar({ visible, onClose }) {
+  const insets = useSafeAreaInsets();
+  const translateX = useSharedValue(-100);
+  const opacity = useSharedValue(0);
+
+  React.useEffect(() => {
+    if (visible) {
+      opacity.value = withTiming(1, { duration: 200 });
+      translateX.value = withSpring(0, { damping: 20, stiffness: 300 });
+    } else {
+      opacity.value = withTiming(0, { duration: 200 });
+      translateX.value = withTiming(-100, { duration: 250 });
+    }
+  }, [visible]);
+
+  const backdropStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
+  const sidebarStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: `${translateX.value}%` }],
+  }));
+
+  return (
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <View className="flex-1 flex-row">
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            },
+            backdropStyle,
+          ]}
+        >
+          <Pressable className="flex-1" onPress={onClose} />
+        </Animated.View>
+
+        <Animated.View
+          style={[
+            {
+              width: '85%',
+              backgroundColor: '#1C1C1E',
+              paddingTop: insets.top,
+              paddingBottom: insets.bottom,
+            },
+            sidebarStyle,
+          ]}
+        >
+          <View className="flex-1 items-center justify-center">
+            <Text className="text-white text-lg">
+              Coming Soon
+            </Text>
+          </View>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+}
+
 // Main App Component
 function MainScreen() {
   const insets = useSafeAreaInsets();
   const [showSectionModal, setShowSectionModal] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [currentScreen, setCurrentScreen] = useState('main');
   const { sections, addSection, updateSection, toggleCollapse, removeSection } = useLyricStore();
 
@@ -359,11 +425,11 @@ function MainScreen() {
   return (
     <View className="flex-1 bg-gray-200" style={{ paddingTop: insets.top }}>
       <View className="flex-row items-center justify-between px-6 py-4">
-        <Pressable className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center">
-          <Ionicons name="home" size={20} color="white" />
-        </Pressable>
-        <Pressable className="w-12 h-12 bg-gray-600 rounded-full items-center justify-center">
-          <Ionicons name="document-text" size={20} color="white" />
+        <Pressable 
+          onPress={() => setShowSidebar(true)}
+          className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center"
+        >
+          <Ionicons name="menu" size={20} color="white" />
         </Pressable>
         <Pressable className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center">
           <Ionicons name="settings" size={20} color="white" />
@@ -395,6 +461,11 @@ function MainScreen() {
         visible={showSectionModal}
         onClose={() => setShowSectionModal(false)}
         onSelectSection={handleCreateSection}
+      />
+
+      <EmptySidebar
+        visible={showSidebar}
+        onClose={() => setShowSidebar(false)}
       />
     </View>
   );

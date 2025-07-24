@@ -2,21 +2,11 @@ import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
-import { View, Text, Pressable, ScrollView, Keyboard, TextInput, Modal } from "react-native";
+import { View, Text, Pressable, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { Audio } from 'expo-av';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-  withRepeat,
-  withSequence,
-  cancelAnimation,
-} from 'react-native-reanimated';
 
-// Simple state management without Zustand for now
+// Simple state management
 const useLyricStore = () => {
   const [sections, setSections] = useState([]);
 
@@ -26,7 +16,6 @@ const useLyricStore = () => {
       type,
       title: type.charAt(0).toUpperCase() + type.slice(1),
       content: '',
-      collapsed: false,
     };
     setSections(prev => [...prev, newSection]);
   };
@@ -37,525 +26,102 @@ const useLyricStore = () => {
     ));
   };
 
-  const toggleCollapse = (id) => {
-    setSections(prev => prev.map(section =>
-      section.id === id ? { ...section, collapsed: !section.collapsed } : section
-    ));
-  };
-
-  const removeSection = (id) => {
-    setSections(prev => prev.filter(section => section.id !== id));
-  };
-
-  return { sections, addSection, updateSection, toggleCollapse, removeSection };
+  return { sections, addSection, updateSection };
 };
 
-// Clean Section Component
-function LyricSection({ section, updateSection, toggleCollapse, removeSection }) {
-  return (
-    <View className="mb-6">
-      <Pressable
-        onPress={() => toggleCollapse(section.id)}
-        className="flex-row items-center justify-between mb-3"
-      >
-        <Text className="text-lg font-medium text-gray-900">
-          {section.title}
-        </Text>
-        <View className="flex-row items-center">
-          <Pressable
-            onPress={() => removeSection(section.id)}
-            className="mr-3 p-1"
-          >
-            <Ionicons name="trash-outline" size={16} color="#6B7280" />
-          </Pressable>
-          <Ionicons
-            name={section.collapsed ? "chevron-down" : "chevron-up"}
-            size={20}
-            color="#6B7280"
-          />
-        </View>
-      </Pressable>
-
-      {!section.collapsed && (
-        <TextInput
-          multiline
-          placeholder={`Write your ${section.type} here...`}
-          value={section.content}
-          onChangeText={(text) => updateSection(section.id, text)}
-          className="bg-white border border-gray-200 rounded-lg p-4 min-h-[100px] text-base leading-6"
-          style={{
-            fontFamily: 'Georgia',
-            textAlignVertical: 'top',
-          }}
-          placeholderTextColor="#9CA3AF"
-        />
-      )}
-    </View>
-  );
-}
-
-// Section Selection Modal
-function SectionSelectionModal({ visible, onClose, onSelectSection }) {
-  const insets = useSafeAreaInsets();
-  const [selectedSection, setSelectedSection] = useState('');
-  const [customLabel, setCustomLabel] = useState('');
-  const [showCustomInput, setShowCustomInput] = useState(false);
-
-  const translateY = useSharedValue(400);
-  const opacity = useSharedValue(0);
-
-  React.useEffect(() => {
-    if (visible) {
-      opacity.value = withTiming(1, { duration: 250 });
-      translateY.value = withSpring(0, { damping: 20, stiffness: 300 });
-    } else {
-      opacity.value = withTiming(0, { duration: 200 });
-      translateY.value = withTiming(400, { duration: 250 });
-      setSelectedSection('');
-      setCustomLabel('');
-      setShowCustomInput(false);
-    }
-  }, [visible]);
-
-  const backdropStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
-
-  const modalStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
-
-  const sectionTypes = [
-    { id: 'main', label: 'main', color: '#E55451' },
-    { id: 'verse', label: 'verse', color: '#F5E6D3' },
-    { id: 'pre-chorus', label: 'pre-chorus', color: '#F5E6D3' },
-    { id: 'chorus', label: 'chorus', color: '#F5E6D3' },
-    { id: 'bridge', label: 'bridge', color: '#F5E6D3' },
-    { id: 'instrumental', label: 'instrumental', color: '#F5E6D3' },
-  ];
-
-  const handleConfirm = () => {
-    if (selectedSection === 'custom' && customLabel.trim()) {
-      onSelectSection('custom', customLabel.trim());
-    } else if (selectedSection && selectedSection !== 'custom') {
-      onSelectSection(selectedSection);
-    }
-    onClose();
-  };
-
-  const canConfirm = selectedSection && (selectedSection !== 'custom' || customLabel.trim());
-
-  return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View className="flex-1">
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            },
-            backdropStyle,
-          ]}
-        >
-          <Pressable className="flex-1" onPress={onClose} />
-        </Animated.View>
-
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: '#4A5568',
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              paddingBottom: insets.bottom + 20,
-              paddingTop: 30,
-              paddingHorizontal: 24,
-            },
-            modalStyle,
-          ]}
-        >
-          <Text className="text-white text-xl font-medium text-center mb-8">
-            How do you want to label this section?
-          </Text>
-
-          <View className="flex-row flex-wrap justify-center gap-3 mb-6">
-            {sectionTypes.map((section) => (
-              <Pressable
-                key={section.id}
-                onPress={() => setSelectedSection(section.id)}
-                className="px-6 py-3 rounded-full"
-                style={{
-                  backgroundColor: section.color,
-                  borderWidth: selectedSection === section.id ? 3 : 0,
-                  borderColor: selectedSection === section.id ? 'white' : 'transparent',
-                }}
-              >
-                <Text 
-                  className="font-medium text-base"
-                  style={{ color: section.id === 'main' ? 'white' : '#4A5568' }}
-                >
-                  {section.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <Pressable
-            onPress={() => {
-              setSelectedSection('custom');
-              setShowCustomInput(true);
-            }}
-            className="px-6 py-4 rounded-full mb-8 self-center"
-            style={{
-              backgroundColor: '#F5E6D3',
-              borderWidth: selectedSection === 'custom' ? 3 : 0,
-              borderColor: selectedSection === 'custom' ? 'white' : 'transparent',
-            }}
-          >
-            {showCustomInput ? (
-              <TextInput
-                placeholder="type custom here..."
-                value={customLabel}
-                onChangeText={setCustomLabel}
-                className="text-gray-700 font-medium text-base min-w-[180px] text-center"
-                placeholderTextColor="#9CA3AF"
-                autoFocus
-                returnKeyType="done"
-                onSubmitEditing={handleConfirm}
-              />
-            ) : (
-              <Text className="text-gray-700 font-medium text-base">
-                type custom here...
-              </Text>
-            )}
-          </Pressable>
-
-          <View className="flex-row justify-between items-center">
-            <Pressable onPress={onClose} className="w-12 h-12 items-center justify-center">
-              <Ionicons name="close" size={28} color="white" />
-            </Pressable>
-
-            <Pressable
-              onPress={handleConfirm}
-              disabled={!canConfirm}
-              className="w-12 h-12 items-center justify-center"
-            >
-              <Ionicons 
-                name="checkmark" 
-                size={28} 
-                color={canConfirm ? "white" : "#6B7280"} 
-              />
-            </Pressable>
-          </View>
-        </Animated.View>
-      </View>
-    </Modal>
-  );
-}
-
-// Empty Sidebar Component
-function EmptySidebar({ visible, onClose }) {
-  const insets = useSafeAreaInsets();
-  const translateX = useSharedValue(-100);
-  const opacity = useSharedValue(0);
-
-  React.useEffect(() => {
-    if (visible) {
-      opacity.value = withTiming(1, { duration: 200 });
-      translateX.value = withSpring(0, { damping: 20, stiffness: 300 });
-    } else {
-      opacity.value = withTiming(0, { duration: 200 });
-      translateX.value = withTiming(-100, { duration: 250 });
-    }
-  }, [visible]);
-
-  const backdropStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
-
-  const sidebarStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: `${translateX.value}%` }],
-  }));
-
-  return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View className="flex-1 flex-row">
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.3)',
-            },
-            backdropStyle,
-          ]}
-        >
-          <Pressable className="flex-1" onPress={onClose} />
-        </Animated.View>
-
-        <Animated.View
-          style={[
-            {
-              width: '85%',
-              backgroundColor: '#1C1C1E',
-              paddingTop: insets.top,
-              paddingBottom: insets.bottom,
-            },
-            sidebarStyle,
-          ]}
-        >
-          <View className="flex-1 items-center justify-center">
-            <Text className="text-white text-lg">
-              Coming Soon
-            </Text>
-          </View>
-        </Animated.View>
-      </View>
-    </Modal>
-  );
-}
-
-// Voice Recording Component (Mock for now)
-function VoiceRecorder() {
+// Simple Recording Button
+function SimpleRecordButton() {
   const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const timerRef = React.useRef(null);
-  
-  const recordButtonScale = useSharedValue(1);
-  const pulseScale = useSharedValue(1);
-
-  const startRecording = () => {
-    setIsRecording(true);
-    setRecordingTime(0);
-    
-    // Start timer
-    timerRef.current = setInterval(() => {
-      setRecordingTime((prev) => prev + 1);
-    }, 1000);
-    
-    // Start animations
-    recordButtonScale.value = withRepeat(
-      withSequence(
-        withTiming(1.1, { duration: 500 }),
-        withTiming(1, { duration: 500 })
-      ),
-      -1,
-      false
-    );
-    
-    pulseScale.value = withRepeat(
-      withSequence(
-        withTiming(1.5, { duration: 1000 }),
-        withTiming(1, { duration: 1000 })
-      ),
-      -1,
-      false
-    );
-  };
-
-  const stopRecording = () => {
-    setIsRecording(false);
-    
-    // Clear timer
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    
-    // Stop animations
-    cancelAnimation(recordButtonScale);
-    cancelAnimation(pulseScale);
-    recordButtonScale.value = withTiming(1);
-    pulseScale.value = withTiming(1);
-    
-    console.log('Mock recording saved!');
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const recordButtonStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: recordButtonScale.value }],
-  }));
-
-  const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulseScale.value }],
-    opacity: pulseScale.value === 1 ? 0 : 0.3,
-  }));
 
   return (
     <View className="items-center">
-      {isRecording && (
-        <View className="mb-4">
-          <Text className="text-red-600 font-mono text-lg text-center">
-            REC {formatTime(recordingTime)}
-          </Text>
-        </View>
-      )}
-      
-      <View className="relative">
-        {/* Pulse Effect */}
-        {isRecording && (
-          <Animated.View
-            style={[
-              {
-                position: 'absolute',
-                width: 80,
-                height: 80,
-                borderRadius: 40,
-                backgroundColor: '#EF4444',
-                top: -10,
-                left: -10,
-              },
-              pulseStyle,
-            ]}
-          />
-        )}
-        
-        {/* Record Button */}
-        <Animated.View style={recordButtonStyle}>
-          <Pressable
-            onPress={isRecording ? stopRecording : startRecording}
-            className="w-16 h-16 rounded-full items-center justify-center"
-            style={{
-              backgroundColor: isRecording ? '#DC2626' : '#EF4444',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 8,
-            }}
-          >
-            <Ionicons
-              name={isRecording ? 'stop' : 'mic'}
-              size={24}
-              color="white"
-            />
-          </Pressable>
-        </Animated.View>
-      </View>
-      
-      <Text className="text-gray-600 text-sm mt-2 text-center">
-        {isRecording ? 'Tap to stop' : 'Voice note'}
+      <Pressable
+        onPress={() => setIsRecording(!isRecording)}
+        className="w-16 h-16 rounded-full items-center justify-center"
+        style={{
+          backgroundColor: isRecording ? '#DC2626' : '#EF4444',
+        }}
+      >
+        <Ionicons
+          name={isRecording ? 'stop' : 'mic'}
+          size={24}
+          color="white"
+        />
+      </Pressable>
+      <Text className="text-gray-600 text-sm mt-2">
+        {isRecording ? 'Recording...' : 'Voice note'}
       </Text>
     </View>
   );
 }
 
-// Main App Component
+// Simple Section Component
+function SimpleSection({ section, updateSection }) {
+  return (
+    <View className="mb-6">
+      <Text className="text-lg font-medium text-gray-900 mb-3">
+        {section.title}
+      </Text>
+      <TextInput
+        multiline
+        placeholder={`Write your ${section.type} here...`}
+        value={section.content}
+        onChangeText={(text) => updateSection(section.id, text)}
+        className="bg-white border border-gray-200 rounded-lg p-4 min-h-[100px] text-base"
+        style={{ fontFamily: 'Georgia', textAlignVertical: 'top' }}
+        placeholderTextColor="#9CA3AF"
+      />
+    </View>
+  );
+}
+
+// Main App
 function MainScreen() {
   const insets = useSafeAreaInsets();
-  const [showSectionModal, setShowSectionModal] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(false);
   const [currentScreen, setCurrentScreen] = useState('main');
-  const { sections, addSection, updateSection, toggleCollapse, removeSection } = useLyricStore();
-
-  const sectionTypes = [
-    { type: 'verse', label: 'Verse', icon: 'musical-note' },
-    { type: 'chorus', label: 'Chorus', icon: 'repeat' },
-    { type: 'bridge', label: 'Bridge', icon: 'git-branch' },
-  ];
-
-  const handleCreateSection = (sectionType, customLabel) => {
-    const mappedType = sectionType === 'main' ? 'verse' : 
-                      sectionType === 'pre-chorus' ? 'verse' :
-                      sectionType === 'custom' ? 'verse' :
-                      sectionType;
-    
-    addSection(mappedType);
-    setShowSectionModal(false);
-    setCurrentScreen('lyricpad');
-  };
+  const { sections, addSection, updateSection } = useLyricStore();
 
   if (currentScreen === 'lyricpad') {
     return (
-      <View className="flex-1 bg-white">
-        <ScrollView
-          className="flex-1 px-6"
-          style={{ paddingTop: insets.top + 20 }}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          onScrollBeginDrag={() => Keyboard.dismiss()}
-        >
-          <View className="flex-row items-center justify-between mb-8">
-            <Pressable
-              onPress={() => setCurrentScreen('main')}
-              className="p-2 -ml-2 rounded-lg"
-            >
+      <View className="flex-1 bg-white" style={{ paddingTop: insets.top + 20 }}>
+        <View className="px-6">
+          {/* Header */}
+          <View className="flex-row items-center mb-8">
+            <Pressable onPress={() => setCurrentScreen('main')} className="mr-4">
               <Ionicons name="arrow-back" size={24} color="#1F2937" />
             </Pressable>
-            
-            <View className="flex-1 ml-4">
-              <Text className="text-2xl font-light text-gray-900 mb-1">
-                Lyric Pad
-              </Text>
-              <Text className="text-sm text-gray-500">
-                {sections.length === 0 
-                  ? "Start writing your song" 
-                  : `${sections.length} section${sections.length !== 1 ? 's' : ''}`
-                }
-              </Text>
-            </View>
+            <Text className="text-2xl font-light text-gray-900">Lyric Pad</Text>
           </View>
 
+          {/* Sections */}
           {sections.map((section) => (
-            <LyricSection 
+            <SimpleSection 
               key={section.id} 
               section={section}
               updateSection={updateSection}
-              toggleCollapse={toggleCollapse}
-              removeSection={removeSection}
             />
           ))}
 
-          <View className="mb-8">
-            <Text className="text-sm font-medium text-gray-600 mb-3">
-              Add Section
-            </Text>
-            <View className="flex-row flex-wrap gap-3">
-              {sectionTypes.map(({ type, label, icon }) => (
-                <Pressable
-                  key={type}
-                  onPress={() => addSection(type)}
-                  className="flex-row items-center bg-gray-50 border border-gray-200 rounded-full px-4 py-3"
-                >
-                  <Ionicons name={icon} size={16} color="#6B7280" />
-                  <Text className="ml-2 text-sm text-gray-700">
-                    + {label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
+          {/* Add Section */}
+          <Pressable
+            onPress={() => addSection('verse')}
+            className="bg-gray-100 p-4 rounded-lg mb-6"
+          >
+            <Text className="text-gray-700 text-center">+ Add Verse</Text>
+          </Pressable>
 
           {sections.length === 0 && (
-            <View className="items-center justify-center py-12">
-              <Ionicons name="musical-notes" size={64} color="#E5E7EB" />
-              <Text className="text-gray-400 text-center mt-4 text-base">
-                Your lyrics will appear here.{'\n'}Tap a button above to get started.
+            <View className="items-center py-12">
+              <Text className="text-gray-400 text-center">
+                Tap "Add Verse" to start writing
               </Text>
             </View>
           )}
+        </View>
 
-          <View style={{ height: 120 }} />
-        </ScrollView>
-        
-        {/* Voice Recording Button */}
-        <View className="absolute bottom-0 left-0 right-0 items-center pb-8">
-          <VoiceRecorder />
+        {/* Recording Button */}
+        <View className="absolute bottom-8 left-0 right-0 items-center">
+          <SimpleRecordButton />
         </View>
       </View>
     );
@@ -563,11 +129,8 @@ function MainScreen() {
 
   return (
     <View className="flex-1 bg-gray-200" style={{ paddingTop: insets.top }}>
-      <View className="flex-row items-center justify-between px-6 py-4">
-        <Pressable 
-          onPress={() => setShowSidebar(true)}
-          className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center"
-        >
+      <View className="flex-row justify-between px-6 py-4">
+        <Pressable className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center">
           <Ionicons name="menu" size={20} color="white" />
         </Pressable>
         <Pressable className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center">
@@ -576,36 +139,22 @@ function MainScreen() {
       </View>
 
       <View className="flex-1 items-center justify-center px-6">
-        <Text className="text-5xl font-light text-gray-800 mb-4 text-center leading-tight">
+        <Text className="text-5xl font-light text-gray-800 mb-4 text-center">
           Lyriq
         </Text>
         
-        <View className="mt-24">
-          <Pressable
-            onPress={() => setShowSectionModal(true)}
-            className="bg-gray-800 px-8 py-4 rounded-full"
-          >
-            <Text className="text-white font-medium text-lg">
-              CREATE SONG SECTION
-            </Text>
-          </Pressable>
-          
-          <Text className="text-gray-600 text-center mt-6 text-base">
-            TAP 'CREATE SONG SECTION'{'\n'}TO START WRITING
+        <Pressable
+          onPress={() => {
+            addSection('verse');
+            setCurrentScreen('lyricpad');
+          }}
+          className="bg-gray-800 px-8 py-4 rounded-full mt-24"
+        >
+          <Text className="text-white font-medium text-lg">
+            START WRITING
           </Text>
-        </View>
+        </Pressable>
       </View>
-
-      <SectionSelectionModal
-        visible={showSectionModal}
-        onClose={() => setShowSectionModal(false)}
-        onSelectSection={handleCreateSection}
-      />
-
-      <EmptySidebar
-        visible={showSidebar}
-        onClose={() => setShowSidebar(false)}
-      />
     </View>
   );
 }

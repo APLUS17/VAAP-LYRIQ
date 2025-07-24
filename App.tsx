@@ -348,7 +348,7 @@ function MainScreen() {
                 Your lyrics will appear here.{'\n'}Tap a button above to get started.
               </Text>
             </View>
-          </View>
+          )}
 
           <View style={{ height: 100 }} />
         </ScrollView>

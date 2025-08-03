@@ -319,7 +319,7 @@ function SectionCard({ section, updateSection, updateSectionType, updateSectionC
   const [showDropdown, setShowDropdown] = useState(false);
   
   const sectionTypes = [
-    'verse', 'chorus', 'bridge', 'pre-chorus', 'outro', 'tag', 'intro'
+    'intro', 'verse', 'chorus', 'bridge'
   ];
 
   return (
@@ -356,25 +356,32 @@ function SectionCard({ section, updateSection, updateSectionType, updateSectionC
       {/* Dropdown Menu */}
       {showDropdown && (
         <View 
-          className="absolute top-12 left-4 bg-gray-800 rounded-lg p-2 z-10"
+          className="absolute top-12 left-4 bg-gray-800 rounded-lg z-10"
           style={{
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 8,
             elevation: 8,
+            minWidth: 120,
           }}
         >
-          {sectionTypes.map((type) => (
+          {sectionTypes.map((type, index) => (
             <Pressable
               key={type}
               onPress={() => {
                 updateSectionType(section.id, type);
                 setShowDropdown(false);
               }}
-              className="p-2 rounded"
+              className="px-3 py-2.5"
+              style={{
+                borderBottomWidth: index < sectionTypes.length - 1 ? 1 : 0,
+                borderBottomColor: '#4B5563',
+              }}
             >
-              <Text className="text-sm text-gray-200 capitalize">{type}</Text>
+              <Text className="text-sm text-gray-200 capitalize font-medium">
+                {type}
+              </Text>
             </Pressable>
           ))}
         </View>

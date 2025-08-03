@@ -2,9 +2,15 @@ import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
-import { View, Text, Pressable, TextInput } from "react-native";
+import { View, Text, Pressable, TextInput, Modal, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from 'react-native-reanimated';
 
 // Simple state management
 const useLyricStore = () => {
@@ -28,6 +34,134 @@ const useLyricStore = () => {
 
   return { sections, addSection, updateSection };
 };
+
+// ChatGPT-style Sidebar Component
+function SongSidebar({ visible, onClose, onSelectSong }) {
+  const insets = useSafeAreaInsets();
+  const translateX = useSharedValue(-100);
+  const opacity = useSharedValue(0);
+
+  React.useEffect(() => {
+    if (visible) {
+      opacity.value = withTiming(1, { duration: 200 });
+      translateX.value = withSpring(0, { damping: 20, stiffness: 300 });
+    } else {
+      opacity.value = withTiming(0, { duration: 200 });
+      translateX.value = withTiming(-100, { duration: 250 });
+    }
+  }, [visible]);
+
+  const backdropStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
+  const sidebarStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: `${translateX.value}%` }],
+  }));
+
+  // Mock song data - would come from storage in real app
+  const songs = [
+    { id: '1', title: 'Midnight Dreams', lastEdited: '2 hours ago', preview: 'Walking through the city lights...' },
+    { id: '2', title: 'Summer Vibes', lastEdited: '1 day ago', preview: 'Golden hour feelings wash...' },
+    { id: '3', title: 'Heartbreak Anthem', lastEdited: '3 days ago', preview: 'Never thought I would be here...' },
+    { id: '4', title: 'Road Trip Song', lastEdited: '1 week ago', preview: 'Miles and miles of open road...' },
+    { id: '5', title: 'Coffee Shop Blues', lastEdited: '2 weeks ago', preview: 'Sitting in this corner booth...' },
+  ];
+
+  return (
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <View className="flex-1 flex-row">
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            },
+            backdropStyle,
+          ]}
+        >
+          <Pressable className="flex-1" onPress={onClose} />
+        </Animated.View>
+
+        <Animated.View
+          style={[
+            {
+              width: '85%',
+              backgroundColor: '#1C1C1E',
+              paddingTop: insets.top,
+              paddingBottom: insets.bottom,
+            },
+            sidebarStyle,
+          ]}
+        >
+          {/* Header */}
+          <View className="px-4 py-4 border-b border-gray-700">
+            <Text className="text-white text-lg font-semibold">Your Songs</Text>
+          </View>
+
+          {/* New Song Button */}
+          <View className="px-4 py-3">
+            <Pressable
+              onPress={() => {
+                onClose();
+                // This would trigger creating a new song
+              }}
+              className="flex-row items-center p-3 rounded-lg bg-gray-800"
+            >
+              <Ionicons name="add" size={20} color="#007AFF" />
+              <Text className="text-blue-500 font-medium ml-3">New Song</Text>
+            </Pressable>
+          </View>
+
+          {/* Songs List */}
+          <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
+            <Text className="text-gray-400 text-sm mb-3 px-3">Recent</Text>
+            
+            {songs.map((song) => (
+              <Pressable
+                key={song.id}
+                onPress={() => {
+                  onSelectSong?.(song);
+                  onClose();
+                }}
+                className="p-3 rounded-lg mb-2 active:bg-gray-700"
+              >
+                <Text className="text-white font-medium mb-1" numberOfLines={1}>
+                  {song.title}
+                </Text>
+                <Text className="text-gray-400 text-sm mb-1" numberOfLines={1}>
+                  {song.preview}
+                </Text>
+                <Text className="text-gray-500 text-xs">
+                  {song.lastEdited}
+                </Text>
+              </Pressable>
+            ))}
+
+            {/* Show More */}
+            <Pressable className="p-3 rounded-lg">
+              <Text className="text-gray-400 text-sm">Show more songs...</Text>
+            </Pressable>
+          </ScrollView>
+
+          {/* User Profile */}
+          <View className="px-4 py-4 border-t border-gray-700">
+            <Pressable className="flex-row items-center p-3 rounded-lg">
+              <View className="w-8 h-8 bg-blue-500 rounded-full items-center justify-center">
+                <Text className="text-white font-bold text-sm">A</Text>
+              </View>
+              <Text className="text-white font-medium ml-3">ayo omoloja</Text>
+            </Pressable>
+          </View>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+}
 
 // AI Voice Input Component (adapted for React Native)
 function AIVoiceInput({ 
@@ -187,6 +321,7 @@ function SimpleSection({ section, updateSection }) {
 function MainScreen() {
   const insets = useSafeAreaInsets();
   const [currentScreen, setCurrentScreen] = useState('main');
+  const [showSidebar, setShowSidebar] = useState(false);
   const { sections, addSection, updateSection } = useLyricStore();
 
   if (currentScreen === 'lyricpad') {
@@ -242,7 +377,10 @@ function MainScreen() {
   return (
     <View className="flex-1 bg-gray-200" style={{ paddingTop: insets.top }}>
       <View className="flex-row justify-between px-6 py-4">
-        <Pressable className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center">
+        <Pressable 
+          onPress={() => setShowSidebar(true)}
+          className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center"
+        >
           <Ionicons name="menu" size={20} color="white" />
         </Pressable>
         <Pressable className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center">
@@ -267,6 +405,16 @@ function MainScreen() {
           </Text>
         </Pressable>
       </View>
+
+      {/* Song Sidebar */}
+      <SongSidebar
+        visible={showSidebar}
+        onClose={() => setShowSidebar(false)}
+        onSelectSong={(song) => {
+          console.log('Selected song:', song.title);
+          // Here you would load the selected song
+        }}
+      />
     </View>
   );
 }

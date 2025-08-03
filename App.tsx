@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
-import { View, Text, Pressable, TextInput, Modal, ScrollView, Keyboard } from "react-native";
+import { View, Text, Pressable, TextInput, Modal, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, {
@@ -15,80 +15,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
 
-// Enhanced state management
-const useLyricStore = () => {
-  const [sections, setSections] = useState([]);
-  const [isRecordingModalVisible, setIsRecordingModalVisible] = useState(false);
-
-  const addSection = (type) => {
-    const newSection = {
-      id: Date.now().toString(),
-      type,
-      title: type.charAt(0).toUpperCase() + type.slice(1),
-      content: '',
-      count: 1,
-    };
-    setSections(prev => [...prev, newSection]);
-  };
-
-  const updateSection = (id, content) => {
-    setSections(prev => prev.map(section =>
-      section.id === id ? { ...section, content } : section
-    ));
-  };
-
-  const updateSectionType = (id, type) => {
-    setSections(prev => prev.map(section =>
-      section.id === id ? { ...section, type, title: type.charAt(0).toUpperCase() + type.slice(1) } : section
-    ));
-  };
-
-  const updateSectionCount = (id, count) => {
-    setSections(prev => prev.map(section =>
-      section.id === id ? { ...section, count: Math.max(1, count) } : section
-    ));
-  };
-
-  const removeSection = (id) => {
-    setSections(prev => prev.filter(section => section.id !== id));
-  };
-
-  const reorderSections = (draggedId, direction, currentIndex) => {
-    setSections(prev => {
-      const newSections = [...prev];
-      const draggedIndex = newSections.findIndex(s => s.id === draggedId);
-      
-      if (draggedIndex === -1) return prev;
-      
-      const targetIndex = direction === 'down' ? 
-        Math.min(draggedIndex + 1, newSections.length - 1) : 
-        Math.max(draggedIndex - 1, 0);
-      
-      if (targetIndex === draggedIndex) return prev;
-      
-      const [draggedSection] = newSections.splice(draggedIndex, 1);
-      newSections.splice(targetIndex, 0, draggedSection);
-      
-      return newSections;
-    });
-  };
-
-  const toggleRecordingModal = (visible = null) => {
-    setIsRecordingModalVisible(visible !== null ? visible : !isRecordingModalVisible);
-  };
-
-  return { 
-    sections, 
-    addSection, 
-    updateSection, 
-    updateSectionType, 
-    updateSectionCount, 
-    removeSection, 
-    reorderSections,
-    isRecordingModalVisible,
-    toggleRecordingModal
-  };
-};
+// Import the new modular components
+import { useLyricStore } from './src/state/lyricStore';
+import RecordingModal from './src/components/RecordingModal';
 
 // ChatGPT-style Sidebar Component
 function SongSidebar({ visible, onClose, onSelectSong }) {
@@ -215,258 +144,6 @@ function SongSidebar({ visible, onClose, onSelectSong }) {
         </Animated.View>
       </View>
     </Modal>
-  );
-}
-
-// Recording Modal Component
-function RecordingModal({ visible, onClose, children }) {
-  const insets = useSafeAreaInsets();
-  const translateY = useSharedValue(100);
-  const opacity = useSharedValue(0);
-
-  React.useEffect(() => {
-    if (visible) {
-      Keyboard.dismiss(); // Auto-dismiss keyboard when modal opens
-      opacity.value = withTiming(1, { duration: 300 });
-      translateY.value = withSpring(0, { damping: 20, stiffness: 300 });
-    } else {
-      opacity.value = withTiming(0, { duration: 250 });
-      translateY.value = withTiming(100, { duration: 300 });
-    }
-  }, [visible]);
-
-  const backdropStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
-
-  const modalStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: `${translateY.value}%` }],
-  }));
-
-  const gestureHandler = useAnimatedGestureHandler({
-    onStart: (_, context) => {
-      context.startY = translateY.value;
-    },
-    onActive: (event, context) => {
-      // Only allow downward swipe to dismiss
-      const newTranslateY = Math.max(0, context.startY + (event.translationY / 3));
-      translateY.value = newTranslateY;
-    },
-    onEnd: (event) => {
-      if (event.translationY > 100 || event.velocityY > 500) {
-        // Dismiss modal
-        translateY.value = withTiming(100, { duration: 300 });
-        opacity.value = withTiming(0, { duration: 250 }, () => {
-          runOnJS(onClose)();
-        });
-      } else {
-        // Snap back to open position
-        translateY.value = withSpring(0, { damping: 20, stiffness: 300 });
-      }
-    },
-  });
-
-  if (!visible) return null;
-
-  return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View className="flex-1">
-        {/* Backdrop */}
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.4)',
-            },
-            backdropStyle,
-          ]}
-        >
-          <Pressable className="flex-1" onPress={onClose} />
-        </Animated.View>
-
-        {/* Modal Content */}
-        <PanGestureHandler onGestureEvent={gestureHandler}>
-          <Animated.View
-            style={[
-              {
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                backgroundColor: '#2A2A2A',
-                borderTopLeftRadius: 24,
-                borderTopRightRadius: 24,
-                paddingTop: 20,
-                paddingHorizontal: 16,
-                paddingBottom: Math.max(insets.bottom, 20),
-                minHeight: 300,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: -4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 12,
-                elevation: 12,
-              },
-              modalStyle,
-            ]}
-          >
-            {/* Drag Handle */}
-            <View className="items-center mb-6">
-              <View
-                style={{
-                  width: 40,
-                  height: 5,
-                  backgroundColor: '#666',
-                  borderRadius: 2.5,
-                }}
-              />
-            </View>
-
-            {/* Modal Content */}
-            <View className="flex-1 items-center justify-center">
-              {children}
-            </View>
-          </Animated.View>
-        </PanGestureHandler>
-      </View>
-    </Modal>
-  );
-}
-
-// AI Voice Input Component (adapted for React Native)
-function AIVoiceInput({ 
-  onStart, 
-  onStop, 
-  visualizerBars = 48, 
-  demoMode = false, 
-  demoInterval = 3000 
-}) {
-  const [submitted, setSubmitted] = useState(false);
-  const [time, setTime] = useState(0);
-  const [isDemo, setIsDemo] = useState(demoMode);
-  const [barHeights, setBarHeights] = useState(Array(visualizerBars).fill(4));
-
-  React.useEffect(() => {
-    let intervalId;
-    
-    if (submitted) {
-      onStart?.();
-      intervalId = setInterval(() => {
-        setTime((t) => t + 1);
-      }, 1000);
-    } else {
-      onStop?.(time);
-      setTime(0);
-    }
-    
-    return () => clearInterval(intervalId);
-  }, [submitted, time, onStart, onStop]);
-
-  React.useEffect(() => {
-    if (!isDemo) return;
-    
-    let timeoutId;
-    const runAnimation = () => {
-      setSubmitted(true);
-      timeoutId = setTimeout(() => {
-        setSubmitted(false);
-        timeoutId = setTimeout(runAnimation, 1000);
-      }, demoInterval);
-    };
-    
-    const initialTimeout = setTimeout(runAnimation, 100);
-    return () => {
-      clearTimeout(timeoutId);
-      clearTimeout(initialTimeout);
-    };
-  }, [isDemo, demoInterval]);
-
-  React.useEffect(() => {
-    let animationId;
-    
-    if (submitted) {
-      const animateBars = () => {
-        setBarHeights(Array(visualizerBars).fill(0).map(() => 
-          4 + Math.random() * 20
-        ));
-        animationId = setTimeout(animateBars, 100);
-      };
-      animateBars();
-    } else {
-      setBarHeights(Array(visualizerBars).fill(4));
-    }
-    
-    return () => clearTimeout(animationId);
-  }, [submitted, visualizerBars]);
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const handleClick = () => {
-    if (isDemo) {
-      setIsDemo(false);
-      setSubmitted(false);
-    } else {
-      setSubmitted((prev) => !prev);
-    }
-  };
-
-  return (
-    <View className="items-center py-4">
-      <View className="items-center gap-4">
-        {/* Main Button */}
-        <Pressable
-          onPress={handleClick}
-          className="w-20 h-20 rounded-full items-center justify-center"
-          style={{
-            backgroundColor: submitted ? '#EF4444' : '#EF4444',
-            shadowColor: '#EF4444',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 8,
-          }}
-        >
-          {submitted ? (
-            <Ionicons name="stop" size={28} color="white" />
-          ) : (
-            <Ionicons name="mic" size={28} color="white" />
-          )}
-        </Pressable>
-
-        {/* Timer */}
-        <Text className="font-mono text-lg font-medium" style={{ 
-          color: submitted ? '#F3F4F6' : '#9CA3AF' 
-        }}>
-          {formatTime(time)}
-        </Text>
-
-        {/* Visualizer Bars */}
-        <View className="h-6 w-80 flex-row items-center justify-center">
-          {barHeights.map((height, i) => (
-            <View
-              key={i}
-              className="w-1 rounded-full mx-0.5"
-              style={{
-                height: submitted ? height : 4,
-                backgroundColor: submitted ? '#EF4444' : '#4B5563',
-              }}
-            />
-          ))}
-        </View>
-
-        {/* Status Text */}
-        <Text className="text-sm font-medium" style={{ color: '#9CA3AF' }}>
-          {submitted ? 'Recording... Tap to stop' : 'Tap to start recording'}
-        </Text>
-      </View>
-    </View>
   );
 }
 
@@ -662,9 +339,11 @@ function AddSectionButton({ onPress }) {
 
 // Main App
 function MainScreen() {
+  /* 🚨 Hooks: ALWAYS top-level, same order every render */
   const insets = useSafeAreaInsets();
   const [currentScreen, setCurrentScreen] = useState('main');
   const [showSidebar, setShowSidebar] = useState(false);
+  
   const { 
     sections, 
     addSection, 
@@ -673,9 +352,11 @@ function MainScreen() {
     updateSectionCount, 
     removeSection, 
     reorderSections,
-    isRecordingModalVisible,
     toggleRecordingModal
   } = useLyricStore();
+
+  /* callback to open modal */
+  const openRecorder = useCallback(() => toggleRecordingModal(true), [toggleRecordingModal]);
 
   if (currentScreen === 'lyricpad') {
     return (
@@ -737,10 +418,10 @@ function MainScreen() {
               )}
             </ScrollView>
 
-            {/* Swipe Up Indicator */}
+            {/* Recording Launch Button */}
             <View className="absolute bottom-4 left-0 right-0 items-center">
               <Pressable 
-                onPress={() => toggleRecordingModal(true)}
+                onPress={openRecorder}
                 className="bg-red-500 w-16 h-16 rounded-full items-center justify-center"
                 style={{
                   shadowColor: '#EF4444',
@@ -758,16 +439,7 @@ function MainScreen() {
         </PanGestureHandler>
 
         {/* Recording Modal */}
-        <RecordingModal
-          visible={isRecordingModalVisible}
-          onClose={() => toggleRecordingModal(false)}
-        >
-          <AIVoiceInput 
-            onStart={() => console.log("Recording started")}
-            onStop={(duration) => console.log(`Recording stopped after ${duration}s`)}
-            visualizerBars={32}
-          />
-        </RecordingModal>
+        <RecordingModal />
       </View>
     );
   }

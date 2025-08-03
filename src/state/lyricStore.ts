@@ -4,23 +4,38 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface LyricSection {
   id: string;
-  type: 'verse' | 'chorus' | 'bridge';
+  type: string;
   title: string;
   content: string;
-  collapsed: boolean;
+  count: number;
 }
 
 interface LyricState {
+  // Recording Modal State
+  isRecordingModalVisible: boolean;
+  toggleRecordingModal: (value?: boolean) => void;
+  
+  // Sections State
   sections: LyricSection[];
-  addSection: (type: 'verse' | 'chorus' | 'bridge') => void;
+  addSection: (type: string) => void;
   updateSection: (id: string, content: string) => void;
-  toggleCollapse: (id: string) => void;
+  updateSectionType: (id: string, type: string) => void;
+  updateSectionCount: (id: string, count: number) => void;
   removeSection: (id: string) => void;
+  reorderSections: (draggedId: string, direction: string, currentIndex: number) => void;
 }
 
 export const useLyricStore = create<LyricState>()(
   persist(
     (set) => ({
+      // Recording Modal State
+      isRecordingModalVisible: false,
+      toggleRecordingModal: (value) =>
+        set((state) => ({
+          isRecordingModalVisible: value ?? !state.isRecordingModalVisible,
+        })),
+
+      // Sections State
       sections: [],
       
       addSection: (type) => set((state) => {
@@ -29,7 +44,7 @@ export const useLyricStore = create<LyricState>()(
           type,
           title: type.charAt(0).toUpperCase() + type.slice(1),
           content: '',
-          collapsed: false,
+          count: 1,
         };
         return { sections: [...state.sections, newSection] };
       }),
@@ -40,19 +55,47 @@ export const useLyricStore = create<LyricState>()(
         ),
       })),
 
-      toggleCollapse: (id) => set((state) => ({
+      updateSectionType: (id, type) => set((state) => ({
         sections: state.sections.map((section) =>
-          section.id === id ? { ...section, collapsed: !section.collapsed } : section
+          section.id === id
+            ? { ...section, type, title: type.charAt(0).toUpperCase() + type.slice(1) }
+            : section
+        ),
+      })),
+
+      updateSectionCount: (id, count) => set((state) => ({
+        sections: state.sections.map((section) =>
+          section.id === id ? { ...section, count: Math.max(1, count) } : section
         ),
       })),
 
       removeSection: (id) => set((state) => ({
         sections: state.sections.filter((section) => section.id !== id),
       })),
+
+      reorderSections: (draggedId, direction, currentIndex) => set((state) => {
+        const newSections = [...state.sections];
+        const draggedIndex = newSections.findIndex((s) => s.id === draggedId);
+
+        if (draggedIndex === -1) return state;
+
+        const targetIndex =
+          direction === 'down'
+            ? Math.min(draggedIndex + 1, newSections.length - 1)
+            : Math.max(draggedIndex - 1, 0);
+
+        if (targetIndex === draggedIndex) return state;
+
+        const [draggedSection] = newSections.splice(draggedIndex, 1);
+        newSections.splice(targetIndex, 0, draggedSection);
+
+        return { sections: newSections };
+      }),
     }),
     {
       name: 'lyric-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({ sections: state.sections }), // Only persist sections, not modal state
     }
   )
 );

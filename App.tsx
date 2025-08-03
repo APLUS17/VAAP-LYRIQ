@@ -337,22 +337,14 @@ function AIVoiceInput({
   );
 }
 
-// Enhanced Section Card Component
+// Enhanced Section Card Component with Swipe-to-Delete
 const AnimatedView = Animated.createAnimatedComponent(View);
 
-function SectionCard({ 
-  section, 
-  updateSection, 
-  updateSectionType, 
-  updateSectionCount, 
-  removeSection,
-  onDragEnd,
-  index
-}) {
+function SectionCard({ section, updateSection, updateSectionType, removeSection }) {
   const [showDropdown, setShowDropdown] = useState(false);
-  const translateY = useSharedValue(0);
   const translateX = useSharedValue(0);
-  const scale = useSharedValue(1);
+  const translateY = useSharedValue(0);
+  const opacity = useSharedValue(1);
   const isDragging = useSharedValue(false);
   
   const sectionTypes = [
@@ -361,59 +353,93 @@ function SectionCard({
 
   const gestureHandler = useAnimatedGestureHandler({
     onStart: (_, context) => {
-      context.startY = translateY.value;
       context.startX = translateX.value;
-      isDragging.value = true;
-      scale.value = withSpring(1.05);
+      context.startY = translateY.value;
     },
     onActive: (event, context) => {
-      translateY.value = context.startY + event.translationY;
-      translateX.value = context.startX + event.translationX * 0.1;
+      const isHorizontal = Math.abs(event.translationX) > Math.abs(event.translationY);
+      
+      if (isHorizontal) {
+        // Horizontal swipe - only allow left swipe for delete
+        translateX.value = Math.min(0, context.startX + event.translationX);
+      } else {
+        // Vertical drag for reordering - constrain to Y-axis only
+        translateY.value = context.startY + event.translationY;
+        translateX.value = withSpring(0); // Always snap back to center horizontally
+        isDragging.value = true;
+      }
     },
     onEnd: (event) => {
-      const shouldReorder = Math.abs(event.translationY) > 80;
-      const direction = event.translationY > 0 ? 'down' : 'up';
+      const isHorizontal = Math.abs(event.translationX) > Math.abs(event.translationY);
       
-      if (shouldReorder && onDragEnd) {
-        runOnJS(onDragEnd)(section.id, direction, index);
+      if (isHorizontal && translateX.value < -100) {
+        // Swipe left to delete
+        translateX.value = withTiming(-400, { duration: 300 });
+        opacity.value = withTiming(0, { duration: 300 }, () => {
+          runOnJS(removeSection)(section.id);
+        });
+      } else {
+        // Snap back to original position
+        translateX.value = withSpring(0);
+        translateY.value = withSpring(0);
+        isDragging.value = false;
       }
-      
-      translateY.value = withSpring(0);
-      translateX.value = withSpring(0);
-      scale.value = withSpring(1);
-      isDragging.value = false;
     },
   });
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateY: translateY.value },
-        { translateX: translateX.value },
-        { scale: scale.value },
-      ],
-      zIndex: isDragging.value ? 999 : 1,
-      shadowOpacity: isDragging.value ? 0.4 : 0.3,
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+    ],
+    opacity: opacity.value,
+    zIndex: isDragging.value ? 999 : 1,
+  }));
+
+  const backgroundStyle = useAnimatedStyle(() => ({
+    opacity: translateX.value < -50 ? 1 : 0,
+  }));
 
   return (
-    <PanGestureHandler onGestureEvent={gestureHandler}>
+    <View className="mb-4">
+      {/* Delete Background */}
       <AnimatedView 
-        className="mb-4" 
         style={[
           {
-            backgroundColor: '#2A2A2A',
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: 100,
+            backgroundColor: '#EF4444',
             borderRadius: 12,
-            padding: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowRadius: 8,
-            elevation: 4,
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 0,
           },
-          animatedStyle
+          backgroundStyle
         ]}
       >
+        <Ionicons name="trash" size={24} color="white" />
+      </AnimatedView>
+
+      {/* Card */}
+      <PanGestureHandler onGestureEvent={gestureHandler}>
+        <AnimatedView 
+          style={[
+            {
+              backgroundColor: '#2A2A2A',
+              borderRadius: 12,
+              padding: 16,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowRadius: 8,
+              elevation: 4,
+              zIndex: 1,
+            },
+            animatedStyle
+          ]}
+        >
       {/* Section Header */}
       <View className="flex-row items-center justify-between mb-3">
         {/* Section Type Dropdown */}
@@ -482,8 +508,9 @@ function SectionCard({
         }}
         placeholderTextColor="#6B7280"
       />
-      </AnimatedView>
-    </PanGestureHandler>
+        </AnimatedView>
+      </PanGestureHandler>
+    </View>
   );
 }
 
@@ -534,16 +561,13 @@ function MainScreen() {
           contentContainerStyle={{ paddingBottom: 120 }}
         >
           {/* Section Cards */}
-          {sections.map((section, index) => (
+          {sections.map((section) => (
             <SectionCard 
               key={section.id} 
               section={section}
-              index={index}
               updateSection={updateSection}
               updateSectionType={updateSectionType}
-              updateSectionCount={updateSectionCount}
               removeSection={removeSection}
-              onDragEnd={reorderSections}
             />
           ))}
 

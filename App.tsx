@@ -262,23 +262,54 @@ function AIVoiceInput({
   };
 
   return (
-    <View className="items-center">
-      {/* Main Button - Compact for bottom bar */}
-      <Pressable
-        onPress={handleClick}
-        className="w-12 h-12 rounded-full items-center justify-center"
-        style={{
-          backgroundColor: submitted ? '#EF4444' : '#EF4444',
-        }}
-      >
-        {submitted ? (
-          <View 
-            className="w-3 h-3 rounded-sm bg-white"
-          />
-        ) : (
-          <Ionicons name="mic" size={18} color="white" />
-        )}
-      </Pressable>
+    <View className="items-center py-4">
+      <View className="items-center gap-2">
+        {/* Main Button */}
+        <Pressable
+          onPress={handleClick}
+          className="w-16 h-16 rounded-xl items-center justify-center"
+          style={{
+            backgroundColor: submitted ? 'transparent' : 'transparent',
+          }}
+        >
+          {submitted ? (
+            <View 
+              className="w-6 h-6 rounded-sm bg-black"
+              style={{
+                transform: [{ rotate: '45deg' }],
+              }}
+            />
+          ) : (
+            <Ionicons name="mic" size={24} color="#374151" />
+          )}
+        </Pressable>
+
+        {/* Timer */}
+        <Text className="font-mono text-sm" style={{ 
+          color: submitted ? '#374151' : '#9CA3AF' 
+        }}>
+          {formatTime(time)}
+        </Text>
+
+        {/* Visualizer Bars */}
+        <View className="h-4 w-64 flex-row items-center justify-center">
+          {barHeights.map((height, i) => (
+            <View
+              key={i}
+              className="w-0.5 rounded-full mx-0.5"
+              style={{
+                height: submitted ? height : 4,
+                backgroundColor: submitted ? '#6B7280' : '#E5E7EB',
+              }}
+            />
+          ))}
+        </View>
+
+        {/* Status Text */}
+        <Text className="text-xs" style={{ color: '#6B7280' }}>
+          {submitted ? 'Listening...' : 'Click to speak'}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -462,32 +493,13 @@ function MainScreen() {
           )}
         </ScrollView>
 
-        {/* Bottom Controls */}
-        <View className="absolute bottom-0 left-0 right-0 bg-white" style={{
-          paddingBottom: insets.bottom,
-          borderTopWidth: 1,
-          borderTopColor: '#E5E7EB'
-        }}>
-          {/* Navigation Bar */}
-          <View className="flex-row items-center justify-between px-6 py-4">
-            <Pressable onPress={() => setCurrentScreen('main')}>
-              <Ionicons name="chevron-back" size={24} color="#6B7280" />
-            </Pressable>
-            <Pressable>
-              <Ionicons name="menu" size={24} color="#6B7280" />
-            </Pressable>
-            <Pressable>
-              <Ionicons name="warning" size={24} color="#6B7280" />
-            </Pressable>
-            <Pressable>
-              <Ionicons name="play" size={24} color="#6B7280" />
-            </Pressable>
-            <AIVoiceInput 
-              onStart={() => console.log("Recording started")}
-              onStop={(duration) => console.log(`Recording stopped after ${duration}s`)}
-              visualizerBars={20}
-            />
-          </View>
+        {/* AI Voice Input */}
+        <View className="absolute bottom-8 left-0 right-0 items-center">
+          <AIVoiceInput 
+            onStart={() => console.log("Recording started")}
+            onStop={(duration) => console.log(`Recording stopped after ${duration}s`)}
+            visualizerBars={32}
+          />
         </View>
       </View>
     );

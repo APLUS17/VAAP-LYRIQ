@@ -336,45 +336,21 @@ function SectionCard({ section, updateSection, updateSectionType, updateSectionC
       {/* Section Header */}
       <View className="flex-row items-center justify-between mb-3">
         {/* Section Type Dropdown */}
-        <View className="flex-row items-center">
-          <Pressable
-            onPress={() => setShowDropdown(!showDropdown)}
-            className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg"
-          >
-            <Ionicons name="menu" size={12} color="#6B7280" />
-            <Text className="ml-2 text-sm font-medium text-gray-700">
-              {section.title}
-            </Text>
-            <Ionicons name="chevron-down" size={12} color="#6B7280" className="ml-1" />
-          </Pressable>
+        <Pressable
+          onPress={() => setShowDropdown(!showDropdown)}
+          className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg"
+        >
+          <Ionicons name="menu" size={12} color="#6B7280" />
+          <Text className="ml-2 text-sm font-medium text-gray-700">
+            {section.title}
+          </Text>
+          <Ionicons name="chevron-down" size={12} color="#6B7280" className="ml-1" />
+        </Pressable>
 
-          {/* Counter */}
-          <View className="flex-row items-center ml-3 bg-gray-800 rounded-lg">
-            <Pressable
-              onPress={() => updateSectionCount(section.id, section.count - 1)}
-              className="px-3 py-2"
-            >
-              <Text className="text-white font-bold">−</Text>
-            </Pressable>
-            <Text className="text-white px-2 font-medium">{section.count}x</Text>
-            <Pressable
-              onPress={() => updateSectionCount(section.id, section.count + 1)}
-              className="px-3 py-2"
-            >
-              <Text className="text-white font-bold">+</Text>
-            </Pressable>
-          </View>
-        </View>
-
-        {/* Action Icons */}
-        <View className="flex-row items-center">
-          <Pressable className="p-2 mr-1">
-            <Ionicons name="refresh" size={16} color="#6B7280" />
-          </Pressable>
-          <Pressable onPress={() => removeSection(section.id)} className="p-2">
-            <Ionicons name="ellipsis-horizontal" size={16} color="#6B7280" />
-          </Pressable>
-        </View>
+        {/* Drag Handle */}
+        <Pressable className="p-2">
+          <Ionicons name="grid" size={16} color="#6B7280" />
+        </Pressable>
       </View>
 
       {/* Dropdown Menu */}

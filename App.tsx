@@ -10,7 +10,10 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
   withSpring,
+  useAnimatedGestureHandler,
+  runOnJS,
 } from 'react-native-reanimated';
+import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Enhanced state management
 const useLyricStore = () => {
@@ -49,7 +52,27 @@ const useLyricStore = () => {
     setSections(prev => prev.filter(section => section.id !== id));
   };
 
-  return { sections, addSection, updateSection, updateSectionType, updateSectionCount, removeSection };
+  const reorderSections = (draggedId, direction, currentIndex) => {
+    setSections(prev => {
+      const newSections = [...prev];
+      const draggedIndex = newSections.findIndex(s => s.id === draggedId);
+      
+      if (draggedIndex === -1) return prev;
+      
+      const targetIndex = direction === 'down' ? 
+        Math.min(draggedIndex + 1, newSections.length - 1) : 
+        Math.max(draggedIndex - 1, 0);
+      
+      if (targetIndex === draggedIndex) return prev;
+      
+      const [draggedSection] = newSections.splice(draggedIndex, 1);
+      newSections.splice(targetIndex, 0, draggedSection);
+      
+      return newSections;
+    });
+  };
+
+  return { sections, addSection, updateSection, updateSectionType, updateSectionCount, removeSection, reorderSections };
 };
 
 // ChatGPT-style Sidebar Component
@@ -315,24 +338,82 @@ function AIVoiceInput({
 }
 
 // Enhanced Section Card Component
-function SectionCard({ section, updateSection, updateSectionType, updateSectionCount, removeSection }) {
+const AnimatedView = Animated.createAnimatedComponent(View);
+
+function SectionCard({ 
+  section, 
+  updateSection, 
+  updateSectionType, 
+  updateSectionCount, 
+  removeSection,
+  onDragEnd,
+  index
+}) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const translateY = useSharedValue(0);
+  const translateX = useSharedValue(0);
+  const scale = useSharedValue(1);
+  const isDragging = useSharedValue(false);
   
   const sectionTypes = [
-    'intro', 'verse', 'chorus', 'bridge'
+    'verse', 'chorus', 'bridge', 'pre-chorus', 'outro', 'tag', 'intro'
   ];
 
+  const gestureHandler = useAnimatedGestureHandler({
+    onStart: (_, context) => {
+      context.startY = translateY.value;
+      context.startX = translateX.value;
+      isDragging.value = true;
+      scale.value = withSpring(1.05);
+    },
+    onActive: (event, context) => {
+      translateY.value = context.startY + event.translationY;
+      translateX.value = context.startX + event.translationX * 0.1;
+    },
+    onEnd: (event) => {
+      const shouldReorder = Math.abs(event.translationY) > 80;
+      const direction = event.translationY > 0 ? 'down' : 'up';
+      
+      if (shouldReorder && onDragEnd) {
+        runOnJS(onDragEnd)(section.id, direction, index);
+      }
+      
+      translateY.value = withSpring(0);
+      translateX.value = withSpring(0);
+      scale.value = withSpring(1);
+      isDragging.value = false;
+    },
+  });
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateY: translateY.value },
+        { translateX: translateX.value },
+        { scale: scale.value },
+      ],
+      zIndex: isDragging.value ? 999 : 1,
+      shadowOpacity: isDragging.value ? 0.4 : 0.3,
+    };
+  });
+
   return (
-    <View className="mb-4" style={{
-      backgroundColor: '#2A2A2A',
-      borderRadius: 12,
-      padding: 16,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 4,
-    }}>
+    <PanGestureHandler onGestureEvent={gestureHandler}>
+      <AnimatedView 
+        className="mb-4" 
+        style={[
+          {
+            backgroundColor: '#2A2A2A',
+            borderRadius: 12,
+            padding: 16,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowRadius: 8,
+            elevation: 4,
+          },
+          animatedStyle
+        ]}
+      >
       {/* Section Header */}
       <View className="flex-row items-center justify-between mb-3">
         {/* Section Type Dropdown */}
@@ -401,7 +482,8 @@ function SectionCard({ section, updateSection, updateSectionType, updateSectionC
         }}
         placeholderTextColor="#6B7280"
       />
-    </View>
+      </AnimatedView>
+    </PanGestureHandler>
   );
 }
 
@@ -423,7 +505,7 @@ function MainScreen() {
   const insets = useSafeAreaInsets();
   const [currentScreen, setCurrentScreen] = useState('main');
   const [showSidebar, setShowSidebar] = useState(false);
-  const { sections, addSection, updateSection, updateSectionType, updateSectionCount, removeSection } = useLyricStore();
+  const { sections, addSection, updateSection, updateSectionType, updateSectionCount, removeSection, reorderSections } = useLyricStore();
 
   if (currentScreen === 'lyricpad') {
     return (
@@ -452,14 +534,16 @@ function MainScreen() {
           contentContainerStyle={{ paddingBottom: 120 }}
         >
           {/* Section Cards */}
-          {sections.map((section) => (
+          {sections.map((section, index) => (
             <SectionCard 
               key={section.id} 
               section={section}
+              index={index}
               updateSection={updateSection}
               updateSectionType={updateSectionType}
               updateSectionCount={updateSectionCount}
               removeSection={removeSection}
+              onDragEnd={reorderSections}
             />
           ))}
 
@@ -534,11 +618,13 @@ function MainScreen() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <MainScreen />
-        <StatusBar style="dark" />
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <GestureHandlerRootView className="flex-1">
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <MainScreen />
+          <StatusBar style="dark" />
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

@@ -355,7 +355,16 @@ function SectionCard({ section, updateSection, updateSectionType, updateSectionC
 
       {/* Dropdown Menu */}
       {showDropdown && (
-        <View className="mb-3 bg-gray-800 rounded-lg p-2">
+        <View 
+          className="absolute top-12 left-4 bg-gray-800 rounded-lg p-2 z-10"
+          style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 8,
+          }}
+        >
           {sectionTypes.map((type) => (
             <Pressable
               key={type}

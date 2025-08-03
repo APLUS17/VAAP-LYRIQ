@@ -12,7 +12,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-// Simple state management
+// Enhanced state management
 const useLyricStore = () => {
   const [sections, setSections] = useState([]);
 
@@ -22,6 +22,7 @@ const useLyricStore = () => {
       type,
       title: type.charAt(0).toUpperCase() + type.slice(1),
       content: '',
+      count: 1,
     };
     setSections(prev => [...prev, newSection]);
   };
@@ -32,7 +33,23 @@ const useLyricStore = () => {
     ));
   };
 
-  return { sections, addSection, updateSection };
+  const updateSectionType = (id, type) => {
+    setSections(prev => prev.map(section =>
+      section.id === id ? { ...section, type, title: type.charAt(0).toUpperCase() + type.slice(1) } : section
+    ));
+  };
+
+  const updateSectionCount = (id, count) => {
+    setSections(prev => prev.map(section =>
+      section.id === id ? { ...section, count: Math.max(1, count) } : section
+    ));
+  };
+
+  const removeSection = (id) => {
+    setSections(prev => prev.filter(section => section.id !== id));
+  };
+
+  return { sections, addSection, updateSection, updateSectionType, updateSectionCount, removeSection };
 };
 
 // ChatGPT-style Sidebar Component
@@ -245,75 +262,136 @@ function AIVoiceInput({
   };
 
   return (
-    <View className="items-center py-4">
-      <View className="items-center gap-2">
-        {/* Main Button */}
-        <Pressable
-          onPress={handleClick}
-          className="w-16 h-16 rounded-xl items-center justify-center"
-          style={{
-            backgroundColor: submitted ? 'transparent' : 'transparent',
-          }}
-        >
-          {submitted ? (
-            <View 
-              className="w-6 h-6 rounded-sm bg-black"
-              style={{
-                transform: [{ rotate: '45deg' }],
-              }}
-            />
-          ) : (
-            <Ionicons name="mic" size={24} color="#374151" />
-          )}
-        </Pressable>
-
-        {/* Timer */}
-        <Text className="font-mono text-sm" style={{ 
-          color: submitted ? '#374151' : '#9CA3AF' 
-        }}>
-          {formatTime(time)}
-        </Text>
-
-        {/* Visualizer Bars */}
-        <View className="h-4 w-64 flex-row items-center justify-center">
-          {barHeights.map((height, i) => (
-            <View
-              key={i}
-              className="w-0.5 rounded-full mx-0.5"
-              style={{
-                height: submitted ? height : 4,
-                backgroundColor: submitted ? '#6B7280' : '#E5E7EB',
-              }}
-            />
-          ))}
-        </View>
-
-        {/* Status Text */}
-        <Text className="text-xs" style={{ color: '#6B7280' }}>
-          {submitted ? 'Listening...' : 'Click to speak'}
-        </Text>
-      </View>
+    <View className="items-center">
+      {/* Main Button - Compact for bottom bar */}
+      <Pressable
+        onPress={handleClick}
+        className="w-12 h-12 rounded-full items-center justify-center"
+        style={{
+          backgroundColor: submitted ? '#EF4444' : '#EF4444',
+        }}
+      >
+        {submitted ? (
+          <View 
+            className="w-3 h-3 rounded-sm bg-white"
+          />
+        ) : (
+          <Ionicons name="mic" size={18} color="white" />
+        )}
+      </Pressable>
     </View>
   );
 }
 
-// Simple Section Component
-function SimpleSection({ section, updateSection }) {
+// Enhanced Section Card Component
+function SectionCard({ section, updateSection, updateSectionType, updateSectionCount, removeSection }) {
+  const [showDropdown, setShowDropdown] = useState(false);
+  
+  const sectionTypes = [
+    'verse', 'chorus', 'bridge', 'pre-chorus', 'outro', 'tag', 'intro'
+  ];
+
   return (
-    <View className="mb-6">
-      <Text className="text-lg font-medium text-gray-900 mb-3">
-        {section.title}
-      </Text>
+    <View className="mb-4" style={{
+      backgroundColor: 'white',
+      borderRadius: 12,
+      padding: 16,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 4,
+    }}>
+      {/* Section Header */}
+      <View className="flex-row items-center justify-between mb-3">
+        {/* Section Type Dropdown */}
+        <View className="flex-row items-center">
+          <Pressable
+            onPress={() => setShowDropdown(!showDropdown)}
+            className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg"
+          >
+            <Ionicons name="menu" size={12} color="#6B7280" />
+            <Text className="ml-2 text-sm font-medium text-gray-700">
+              {section.title}
+            </Text>
+            <Ionicons name="chevron-down" size={12} color="#6B7280" className="ml-1" />
+          </Pressable>
+
+          {/* Counter */}
+          <View className="flex-row items-center ml-3 bg-gray-800 rounded-lg">
+            <Pressable
+              onPress={() => updateSectionCount(section.id, section.count - 1)}
+              className="px-3 py-2"
+            >
+              <Text className="text-white font-bold">−</Text>
+            </Pressable>
+            <Text className="text-white px-2 font-medium">{section.count}x</Text>
+            <Pressable
+              onPress={() => updateSectionCount(section.id, section.count + 1)}
+              className="px-3 py-2"
+            >
+              <Text className="text-white font-bold">+</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Action Icons */}
+        <View className="flex-row items-center">
+          <Pressable className="p-2 mr-1">
+            <Ionicons name="refresh" size={16} color="#6B7280" />
+          </Pressable>
+          <Pressable onPress={() => removeSection(section.id)} className="p-2">
+            <Ionicons name="ellipsis-horizontal" size={16} color="#6B7280" />
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Dropdown Menu */}
+      {showDropdown && (
+        <View className="mb-3 bg-gray-50 rounded-lg p-2">
+          {sectionTypes.map((type) => (
+            <Pressable
+              key={type}
+              onPress={() => {
+                updateSectionType(section.id, type);
+                setShowDropdown(false);
+              }}
+              className="p-2 rounded"
+            >
+              <Text className="text-sm text-gray-700 capitalize">{type}</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
+
+      {/* Lyrics Text Area */}
       <TextInput
         multiline
         placeholder={`Write your ${section.type} here...`}
         value={section.content}
         onChangeText={(text) => updateSection(section.id, text)}
-        className="bg-white border border-gray-200 rounded-lg p-4 min-h-[100px] text-base"
-        style={{ fontFamily: 'Georgia', textAlignVertical: 'top' }}
+        className="min-h-[100px] text-base leading-6"
+        style={{ 
+          fontFamily: 'Georgia', 
+          textAlignVertical: 'top',
+          color: '#374151'
+        }}
         placeholderTextColor="#9CA3AF"
       />
     </View>
+  );
+}
+
+// Add Section Button Component
+function AddSectionButton({ onPress }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      className="flex-row items-center bg-gray-100 px-4 py-3 rounded-lg mb-6"
+    >
+      <Text className="text-gray-600 font-medium">add section</Text>
+      <Text className="text-gray-600 ml-2 text-lg">+</Text>
+    </Pressable>
   );
 }
 
@@ -322,53 +400,94 @@ function MainScreen() {
   const insets = useSafeAreaInsets();
   const [currentScreen, setCurrentScreen] = useState('main');
   const [showSidebar, setShowSidebar] = useState(false);
-  const { sections, addSection, updateSection } = useLyricStore();
+  const { sections, addSection, updateSection, updateSectionType, updateSectionCount, removeSection } = useLyricStore();
 
   if (currentScreen === 'lyricpad') {
     return (
-      <View className="flex-1 bg-white" style={{ paddingTop: insets.top + 20 }}>
-        <View className="px-6">
-          {/* Header */}
-          <View className="flex-row items-center mb-8">
-            <Pressable onPress={() => setCurrentScreen('main')} className="mr-4">
-              <Ionicons name="arrow-back" size={24} color="#1F2937" />
+      <View className="flex-1" style={{ 
+        backgroundColor: '#F5F0E8',
+        paddingTop: insets.top + 20 
+      }}>
+        {/* Header */}
+        <View className="flex-row items-center justify-between px-6 mb-6">
+          <Pressable onPress={() => setCurrentScreen('main')} className="p-2">
+            <Ionicons name="arrow-back" size={24} color="#1F2937" />
+          </Pressable>
+          
+          <View className="flex-row items-center">
+            <Pressable className="w-10 h-10 bg-gray-800 rounded-full items-center justify-center mr-3">
+              <Ionicons name="home" size={16} color="white" />
             </Pressable>
-            <Text className="text-2xl font-light text-gray-900">Lyric Pad</Text>
+            <Pressable className="w-10 h-10 bg-gray-600 rounded-full items-center justify-center mr-3">
+              <Ionicons name="document-text" size={16} color="white" />
+            </Pressable>
+            <Text className="text-gray-600 text-sm">tutorials</Text>
           </View>
+        </View>
 
-          {/* Sections */}
+        {/* Title */}
+        <View className="px-6 mb-6">
+          <Text className="text-4xl font-light text-gray-900">
+            Lyrics + Structure
+          </Text>
+        </View>
+
+        {/* Sections Container */}
+        <ScrollView 
+          className="flex-1 px-6" 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 120 }}
+        >
+          {/* Section Cards */}
           {sections.map((section) => (
-            <SimpleSection 
+            <SectionCard 
               key={section.id} 
               section={section}
               updateSection={updateSection}
+              updateSectionType={updateSectionType}
+              updateSectionCount={updateSectionCount}
+              removeSection={removeSection}
             />
           ))}
 
-          {/* Add Section */}
-          <Pressable
-            onPress={() => addSection('verse')}
-            className="bg-gray-100 p-4 rounded-lg mb-6"
-          >
-            <Text className="text-gray-700 text-center">+ Add Verse</Text>
-          </Pressable>
+          {/* Add Section Button */}
+          <AddSectionButton onPress={() => addSection('verse')} />
 
           {sections.length === 0 && (
             <View className="items-center py-12">
               <Text className="text-gray-400 text-center">
-                Tap "Add Verse" to start writing
+                Tap "add section" to start writing
               </Text>
             </View>
           )}
-        </View>
+        </ScrollView>
 
-        {/* AI Voice Input */}
-        <View className="absolute bottom-8 left-0 right-0 items-center">
-          <AIVoiceInput 
-            onStart={() => console.log("Recording started")}
-            onStop={(duration) => console.log(`Recording stopped after ${duration}s`)}
-            visualizerBars={32}
-          />
+        {/* Bottom Controls */}
+        <View className="absolute bottom-0 left-0 right-0 bg-white" style={{
+          paddingBottom: insets.bottom,
+          borderTopWidth: 1,
+          borderTopColor: '#E5E7EB'
+        }}>
+          {/* Navigation Bar */}
+          <View className="flex-row items-center justify-between px-6 py-4">
+            <Pressable onPress={() => setCurrentScreen('main')}>
+              <Ionicons name="chevron-back" size={24} color="#6B7280" />
+            </Pressable>
+            <Pressable>
+              <Ionicons name="menu" size={24} color="#6B7280" />
+            </Pressable>
+            <Pressable>
+              <Ionicons name="warning" size={24} color="#6B7280" />
+            </Pressable>
+            <Pressable>
+              <Ionicons name="play" size={24} color="#6B7280" />
+            </Pressable>
+            <AIVoiceInput 
+              onStart={() => console.log("Recording started")}
+              onStop={(duration) => console.log(`Recording stopped after ${duration}s`)}
+              visualizerBars={20}
+            />
+          </View>
         </View>
       </View>
     );

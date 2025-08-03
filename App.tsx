@@ -358,93 +358,96 @@ function MainScreen() {
   /* callback to open modal */
   const openRecorder = useCallback(() => toggleRecordingModal(true), [toggleRecordingModal]);
 
-  if (currentScreen === 'lyricpad') {
-    return (
-      <View className="flex-1" style={{ 
-        backgroundColor: '#1A1A1A',
-        paddingTop: insets.top + 20 
-      }}>
-        {/* Header */}
-        <View className="flex-row items-center px-6 mb-6">
-          <Pressable onPress={() => setCurrentScreen('main')} className="p-2">
-            <Ionicons name="arrow-back" size={24} color="#F3F4F6" />
-          </Pressable>
-        </View>
+  /* ✅ ALWAYS call this hook - logic inside handler, not around hook */
+  const swipeUpGestureHandler = useAnimatedGestureHandler({
+    onEnd: (event) => {
+      // Only handle swipe if we're on lyricpad screen
+      if (currentScreen === 'lyricpad') {
+        // Detect upward swipe from bottom area
+        if (event.translationY < -50 && event.velocityY < -500 && event.absoluteY > 600) {
+          runOnJS(toggleRecordingModal)(true);
+        }
+      }
+    },
+  });
 
-        {/* Title */}
-        <View className="px-6 mb-6">
-          <Text className="text-4xl font-light text-white">
-            LYRIQ
-          </Text>
-        </View>
-
-        {/* Sections Container with Swipe-Up Gesture */}
-        <PanGestureHandler
-          onGestureEvent={useAnimatedGestureHandler({
-            onEnd: (event) => {
-              // Detect upward swipe from bottom area
-              if (event.translationY < -50 && event.velocityY < -500 && event.absoluteY > 600) {
-                runOnJS(toggleRecordingModal)(true);
-              }
-            },
-          })}
-        >
-          <Animated.View className="flex-1">
-            <ScrollView 
-              className="flex-1 px-6" 
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 60 }}
-            >
-              {/* Section Cards */}
-              {sections.map((section) => (
-                <SectionCard 
-                  key={section.id} 
-                  section={section}
-                  updateSection={updateSection}
-                  updateSectionType={updateSectionType}
-                  removeSection={removeSection}
-                />
-              ))}
-
-              {/* Add Section Button */}
-              <AddSectionButton onPress={() => addSection('verse')} />
-
-              {sections.length === 0 && (
-                <View className="items-center py-12">
-                  <Text className="text-gray-500 text-center">
-                    Tap "add section" to start writing
-                  </Text>
-                </View>
-              )}
-            </ScrollView>
-
-            {/* Recording Launch Button */}
-            <View className="absolute bottom-4 left-0 right-0 items-center">
-              <Pressable 
-                onPress={openRecorder}
-                className="bg-red-500 w-16 h-16 rounded-full items-center justify-center"
-                style={{
-                  shadowColor: '#EF4444',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 8,
-                  elevation: 8,
-                }}
-              >
-                <Ionicons name="mic" size={24} color="white" />
-              </Pressable>
-              <Text className="text-gray-400 text-xs mt-2">Swipe up to record</Text>
-            </View>
-          </Animated.View>
-        </PanGestureHandler>
-
-        {/* Recording Modal */}
-        <RecordingModal />
+  // ✅ CONDITIONAL RENDERING - NOT CONDITIONAL RETURNS
+  const renderLyricPadScreen = () => (
+    <View className="flex-1" style={{ 
+      backgroundColor: '#1A1A1A',
+      paddingTop: insets.top + 20 
+    }}>
+      {/* Header */}
+      <View className="flex-row items-center px-6 mb-6">
+        <Pressable onPress={() => setCurrentScreen('main')} className="p-2">
+          <Ionicons name="arrow-back" size={24} color="#F3F4F6" />
+        </Pressable>
       </View>
-    );
-  }
 
-  return (
+      {/* Title */}
+      <View className="px-6 mb-6">
+        <Text className="text-4xl font-light text-white">
+          LYRIQ
+        </Text>
+      </View>
+
+      {/* Sections Container with Swipe-Up Gesture */}
+      <PanGestureHandler onGestureEvent={swipeUpGestureHandler}>
+        <Animated.View className="flex-1">
+          <ScrollView 
+            className="flex-1 px-6" 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 60 }}
+          >
+            {/* Section Cards */}
+            {sections.map((section) => (
+              <SectionCard 
+                key={section.id} 
+                section={section}
+                updateSection={updateSection}
+                updateSectionType={updateSectionType}
+                removeSection={removeSection}
+              />
+            ))}
+
+            {/* Add Section Button */}
+            <AddSectionButton onPress={() => addSection('verse')} />
+
+            {sections.length === 0 && (
+              <View className="items-center py-12">
+                <Text className="text-gray-500 text-center">
+                  Tap "add section" to start writing
+                </Text>
+              </View>
+            )}
+          </ScrollView>
+
+          {/* Recording Launch Button */}
+          <View className="absolute bottom-4 left-0 right-0 items-center">
+            <Pressable 
+              onPress={openRecorder}
+              className="bg-red-500 w-16 h-16 rounded-full items-center justify-center"
+              style={{
+                shadowColor: '#EF4444',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+              }}
+            >
+              <Ionicons name="mic" size={24} color="white" />
+            </Pressable>
+            <Text className="text-gray-400 text-xs mt-2">Swipe up to record</Text>
+          </View>
+        </Animated.View>
+      </PanGestureHandler>
+
+      {/* Recording Modal */}
+      <RecordingModal />
+    </View>
+  );
+
+  const renderHomeScreen = () => (
     <View className="flex-1 bg-gray-200" style={{ paddingTop: insets.top }}>
       <View className="flex-row justify-between px-6 py-4">
         <Pressable 
@@ -487,6 +490,9 @@ function MainScreen() {
       />
     </View>
   );
+
+  // ✅ CONDITIONAL RENDERING LOGIC
+  return currentScreen === 'lyricpad' ? renderLyricPadScreen() : renderHomeScreen();
 }
 
 export default function App() {

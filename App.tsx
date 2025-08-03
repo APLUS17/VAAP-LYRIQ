@@ -324,12 +324,12 @@ function SectionCard({ section, updateSection, updateSectionType, updateSectionC
 
   return (
     <View className="mb-4" style={{
-      backgroundColor: 'white',
+      backgroundColor: '#2A2A2A',
       borderRadius: 12,
       padding: 16,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
+      shadowOpacity: 0.3,
       shadowRadius: 8,
       elevation: 4,
     }}>
@@ -338,24 +338,24 @@ function SectionCard({ section, updateSection, updateSectionType, updateSectionC
         {/* Section Type Dropdown */}
         <Pressable
           onPress={() => setShowDropdown(!showDropdown)}
-          className="flex-row items-center bg-gray-100 px-3 py-2 rounded-lg"
+          className="flex-row items-center bg-gray-700 px-3 py-2 rounded-lg"
         >
-          <Ionicons name="menu" size={12} color="#6B7280" />
-          <Text className="ml-2 text-sm font-medium text-gray-700">
+          <Ionicons name="menu" size={12} color="#9CA3AF" />
+          <Text className="ml-2 text-sm font-medium text-gray-200">
             {section.title}
           </Text>
-          <Ionicons name="chevron-down" size={12} color="#6B7280" className="ml-1" />
+          <Ionicons name="chevron-down" size={12} color="#9CA3AF" className="ml-1" />
         </Pressable>
 
         {/* Drag Handle */}
         <Pressable className="p-2">
-          <Ionicons name="grid" size={16} color="#6B7280" />
+          <Ionicons name="grid" size={16} color="#9CA3AF" />
         </Pressable>
       </View>
 
       {/* Dropdown Menu */}
       {showDropdown && (
-        <View className="mb-3 bg-gray-50 rounded-lg p-2">
+        <View className="mb-3 bg-gray-800 rounded-lg p-2">
           {sectionTypes.map((type) => (
             <Pressable
               key={type}
@@ -365,7 +365,7 @@ function SectionCard({ section, updateSection, updateSectionType, updateSectionC
               }}
               className="p-2 rounded"
             >
-              <Text className="text-sm text-gray-700 capitalize">{type}</Text>
+              <Text className="text-sm text-gray-200 capitalize">{type}</Text>
             </Pressable>
           ))}
         </View>
@@ -381,9 +381,9 @@ function SectionCard({ section, updateSection, updateSectionType, updateSectionC
         style={{ 
           fontFamily: 'Georgia', 
           textAlignVertical: 'top',
-          color: '#374151'
+          color: '#F3F4F6'
         }}
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor="#6B7280"
       />
     </View>
   );
@@ -394,10 +394,10 @@ function AddSectionButton({ onPress }) {
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center bg-gray-100 px-4 py-3 rounded-lg mb-6"
+      className="flex-row items-center bg-gray-700 px-4 py-3 rounded-lg mb-6"
     >
-      <Text className="text-gray-600 font-medium">add section</Text>
-      <Text className="text-gray-600 ml-2 text-lg">+</Text>
+      <Text className="text-gray-200 font-medium">add section</Text>
+      <Text className="text-gray-200 ml-2 text-lg">+</Text>
     </Pressable>
   );
 }
@@ -412,30 +412,30 @@ function MainScreen() {
   if (currentScreen === 'lyricpad') {
     return (
       <View className="flex-1" style={{ 
-        backgroundColor: '#F5F0E8',
+        backgroundColor: '#1A1A1A',
         paddingTop: insets.top + 20 
       }}>
         {/* Header */}
         <View className="flex-row items-center justify-between px-6 mb-6">
           <Pressable onPress={() => setCurrentScreen('main')} className="p-2">
-            <Ionicons name="arrow-back" size={24} color="#1F2937" />
+            <Ionicons name="arrow-back" size={24} color="#F3F4F6" />
           </Pressable>
           
           <View className="flex-row items-center">
-            <Pressable className="w-10 h-10 bg-gray-800 rounded-full items-center justify-center mr-3">
+            <Pressable className="w-10 h-10 bg-gray-600 rounded-full items-center justify-center mr-3">
               <Ionicons name="home" size={16} color="white" />
             </Pressable>
-            <Pressable className="w-10 h-10 bg-gray-600 rounded-full items-center justify-center mr-3">
+            <Pressable className="w-10 h-10 bg-gray-700 rounded-full items-center justify-center mr-3">
               <Ionicons name="document-text" size={16} color="white" />
             </Pressable>
-            <Text className="text-gray-600 text-sm">tutorials</Text>
+            <Text className="text-gray-400 text-sm">tutorials</Text>
           </View>
         </View>
 
         {/* Title */}
         <View className="px-6 mb-6">
-          <Text className="text-4xl font-light text-gray-900">
-            Lyrics + Structure
+          <Text className="text-4xl font-light text-white">
+            LYRIQ
           </Text>
         </View>
 
@@ -462,7 +462,7 @@ function MainScreen() {
 
           {sections.length === 0 && (
             <View className="items-center py-12">
-              <Text className="text-gray-400 text-center">
+              <Text className="text-gray-500 text-center">
                 Tap "add section" to start writing
               </Text>
             </View>

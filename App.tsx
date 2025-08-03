@@ -416,20 +416,10 @@ function MainScreen() {
         paddingTop: insets.top + 20 
       }}>
         {/* Header */}
-        <View className="flex-row items-center justify-between px-6 mb-6">
+        <View className="flex-row items-center px-6 mb-6">
           <Pressable onPress={() => setCurrentScreen('main')} className="p-2">
             <Ionicons name="arrow-back" size={24} color="#F3F4F6" />
           </Pressable>
-          
-          <View className="flex-row items-center">
-            <Pressable className="w-10 h-10 bg-gray-600 rounded-full items-center justify-center mr-3">
-              <Ionicons name="home" size={16} color="white" />
-            </Pressable>
-            <Pressable className="w-10 h-10 bg-gray-700 rounded-full items-center justify-center mr-3">
-              <Ionicons name="document-text" size={16} color="white" />
-            </Pressable>
-            <Text className="text-gray-400 text-sm">tutorials</Text>
-          </View>
         </View>
 
         {/* Title */}

@@ -449,15 +449,12 @@ function MainScreen() {
 
   const renderHomeScreen = () => (
     <View className="flex-1 bg-gray-200" style={{ paddingTop: insets.top }}>
-      <View className="flex-row justify-between px-6 py-4">
+      <View className="flex-row justify-start px-6 py-4">
         <Pressable 
           onPress={() => setShowSidebar(true)}
           className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center"
         >
           <Ionicons name="menu" size={20} color="white" />
-        </Pressable>
-        <Pressable className="w-12 h-12 bg-gray-800 rounded-full items-center justify-center">
-          <Ionicons name="settings" size={20} color="white" />
         </Pressable>
       </View>
 

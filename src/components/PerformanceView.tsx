@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLyricStore } from '../state/lyricStore';
+import RecordingModal from './RecordingModal';
 
 // Audio Player Component
 function AudioPlayer() {
@@ -107,7 +108,7 @@ function AudioPlayer() {
 // Performance View Component
 export default function PerformanceView() {
   const insets = useSafeAreaInsets();
-  const { sections, togglePerformanceMode } = useLyricStore();
+  const { sections, togglePerformanceMode, toggleRecordingModal } = useLyricStore();
 
   // Disable keyboard in read-only mode
   React.useEffect(() => {
@@ -166,7 +167,7 @@ export default function PerformanceView() {
       backgroundColor: '#1A1A1A',
       paddingTop: insets.top + 20 
     }}>
-      {/* Header with View Toggle */}
+      {/* Header */}
       <View className="flex-row items-center justify-between px-6 mb-6">
         <Text className="text-4xl font-light text-white">LYRIQ</Text>
         <Pressable
@@ -177,48 +178,70 @@ export default function PerformanceView() {
         </Pressable>
       </View>
 
-      {/* Sticky Audio Player */}
-      <View style={{
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 8,
-      }}>
-        <AudioPlayer />
-      </View>
+      {/* Audio Player */}
+      <AudioPlayer />
 
-      {/* Lyrics Display with Enhanced Styling */}
-      <View className="flex-1" style={{ paddingBottom: insets.bottom }}>
-        <ScrollView 
-          className="flex-1 px-6"
-          showsVerticalScrollIndicator={true}
-          indicatorStyle="white"
-          contentContainerStyle={{ 
-            paddingTop: 24,
-            paddingBottom: 40,
-          }}
-          // Smooth scroll behavior
-          decelerationRate="normal"
-          scrollEventThrottle={16}
-        >
-          {renderLyrics()}
-          
-          {/* Bottom spacing for safe area */}
-          <View style={{ height: Math.max(insets.bottom, 20) }} />
-        </ScrollView>
-
-        {/* Mini Progress Bar for Scrolling Context */}
+      {/* Elevated Lyrics Card */}
+      <View className="flex-1 mx-4 mb-4">
         <View 
-          className="absolute bottom-0 left-6 right-6 h-1 bg-gray-800 rounded-full"
-          style={{ marginBottom: insets.bottom + 8 }}
+          className="flex-1 bg-gray-800 rounded-3xl"
+          style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.3,
+            shadowRadius: 16,
+            elevation: 16,
+          }}
         >
-          <View 
-            className="h-full bg-blue-500 rounded-full"
-            style={{ width: '42%' }} // Matches audio progress
-          />
+          <ScrollView 
+            className="flex-1 p-6"
+            showsVerticalScrollIndicator={true}
+            indicatorStyle="white"
+            contentContainerStyle={{ 
+              paddingTop: 12,
+              paddingBottom: 20,
+            }}
+            decelerationRate="normal"
+            scrollEventThrottle={16}
+          >
+            {renderLyrics()}
+          </ScrollView>
         </View>
       </View>
+
+      {/* Bottom Button Bar */}
+      <View 
+        className="flex-row items-center justify-between px-8"
+        style={{ 
+          paddingBottom: Math.max(insets.bottom, 20),
+          paddingTop: 16,
+        }}
+      >
+        {/* Record Button (left side - where "notes" is in screenshot) */}
+        <Pressable
+          onPress={() => toggleRecordingModal(true)}
+          className="items-center"
+        >
+          <View className="w-12 h-12 bg-red-500 rounded-full items-center justify-center mb-2">
+            <Ionicons name="mic" size={20} color="white" />
+          </View>
+          <Text className="text-gray-400 text-xs">record</Text>
+        </Pressable>
+
+        {/* Edit Button (right side - where "edit" is in screenshot) */}
+        <Pressable
+          onPress={() => togglePerformanceMode(false)}
+          className="items-center"
+        >
+          <View className="w-12 h-12 bg-gray-700 rounded-full items-center justify-center mb-2">
+            <Ionicons name="create" size={20} color="white" />
+          </View>
+          <Text className="text-gray-400 text-xs">edit</Text>
+        </Pressable>
+      </View>
+
+      {/* Recording Modal */}
+      <RecordingModal />
     </View>
   );
 }

@@ -24,7 +24,12 @@ import RecordingModal from './src/components/RecordingModal';
 // Enhanced Section Card Component with Swipe-to-Delete
 const AnimatedView = Animated.createAnimatedComponent(View);
 
-function SectionCard({ section, updateSection, updateSectionType, removeSection }) {
+function SectionCard({ section, updateSection, updateSectionType, removeSection }: {
+  section: any;
+  updateSection: (id: string, content: string) => void;
+  updateSectionType: (id: string, type: string) => void;
+  removeSection: (id: string) => void;
+}) {
   const [showDropdown, setShowDropdown] = useState(false);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -36,11 +41,11 @@ function SectionCard({ section, updateSection, updateSectionType, removeSection 
   ];
 
   const gestureHandler = useAnimatedGestureHandler({
-    onStart: (_, context) => {
+    onStart: (_, context: any) => {
       context.startX = translateX.value;
       context.startY = translateY.value;
     },
-    onActive: (event, context) => {
+    onActive: (event, context: any) => {
       const isHorizontal = Math.abs(event.translationX) > Math.abs(event.translationY);
       
       if (isHorizontal) {
@@ -75,7 +80,7 @@ function SectionCard({ section, updateSection, updateSectionType, removeSection 
     transform: [
       { translateX: translateX.value },
       { translateY: translateY.value },
-    ],
+    ] as any,
     opacity: opacity.value,
     zIndex: isDragging.value ? 999 : 1,
   }));
@@ -199,7 +204,7 @@ function SectionCard({ section, updateSection, updateSectionType, removeSection 
 }
 
 // Add Section Button Component
-function AddSectionButton({ onPress }) {
+function AddSectionButton({ onPress }: { onPress: () => void }) {
   return (
     <Pressable
       onPress={onPress}

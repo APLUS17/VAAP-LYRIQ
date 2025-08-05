@@ -38,10 +38,10 @@ export default function RecordingModal() {
   }, [isRecordingModalVisible]);
 
   const gestureHandler = useAnimatedGestureHandler({
-    onStart: (_, context) => {
+    onStart: (_, context: any) => {
       context.startY = translateY.value;
     },
-    onActive: (event, context) => {
+    onActive: (event, context: any) => {
       // Only allow downward swipe to dismiss
       const newTranslateY = Math.max(0, context.startY + event.translationY);
       translateY.value = newTranslateY;

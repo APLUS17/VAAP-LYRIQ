@@ -234,7 +234,7 @@ export default function PerformanceView() {
           className="items-center"
         >
           <View className="w-12 h-12 bg-gray-700 rounded-full items-center justify-center mb-2">
-            <Ionicons name="create" size={20} color="white" />
+            <Ionicons name="arrow-back" size={20} color="white" />
           </View>
           <Text className="text-gray-400 text-xs">edit</Text>
         </Pressable>

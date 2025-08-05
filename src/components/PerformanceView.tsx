@@ -169,13 +169,14 @@ export default function PerformanceView() {
     }}>
       {/* Header */}
       <View className="flex-row items-center justify-between px-6 mb-6">
-        <Text className="text-4xl font-light text-white">LYRIQ</Text>
         <Pressable
           onPress={() => togglePerformanceMode(false)}
           className="p-2"
         >
           <Ionicons name="create" size={24} color="#9CA3AF" />
         </Pressable>
+        <Text className="text-4xl font-light text-white">LYRIQ</Text>
+        <View className="w-10" />
       </View>
 
       {/* Audio Player */}

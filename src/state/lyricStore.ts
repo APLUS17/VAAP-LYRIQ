@@ -15,6 +15,10 @@ interface LyricState {
   isRecordingModalVisible: boolean;
   toggleRecordingModal: (value?: boolean) => void;
   
+  // View Mode State
+  isPerformanceMode: boolean;
+  togglePerformanceMode: (value?: boolean) => void;
+  
   // Sections State
   sections: LyricSection[];
   addSection: (type: string) => void;
@@ -33,6 +37,13 @@ export const useLyricStore = create<LyricState>()(
       toggleRecordingModal: (value) =>
         set((state) => ({
           isRecordingModalVisible: value ?? !state.isRecordingModalVisible,
+        })),
+
+      // View Mode State
+      isPerformanceMode: false,
+      togglePerformanceMode: (value) =>
+        set((state) => ({
+          isPerformanceMode: value ?? !state.isPerformanceMode,
         })),
 
       // Sections State

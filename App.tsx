@@ -18,6 +18,7 @@ import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-
 // Import the new modular components
 import { useLyricStore } from './src/state/lyricStore';
 import RecordingModal from './src/components/RecordingModal';
+import PerformanceView from './src/components/PerformanceView';
 
 
 
@@ -229,7 +230,9 @@ function MainScreen() {
     updateSectionCount, 
     removeSection, 
     reorderSections,
-    toggleRecordingModal
+    toggleRecordingModal,
+    isPerformanceMode,
+    togglePerformanceMode
   } = useLyricStore();
 
   /* callback to open modal */
@@ -245,16 +248,25 @@ function MainScreen() {
     },
   });
 
+  // Conditional rendering based on view mode
+  if (isPerformanceMode) {
+    return <PerformanceView />;
+  }
+
   return (
     <View className="flex-1" style={{ 
       backgroundColor: '#1A1A1A',
       paddingTop: insets.top + 20 
     }}>
-      {/* Title */}
-      <View className="px-6 mb-6">
-        <Text className="text-4xl font-light text-white">
-          LYRIQ
-        </Text>
+      {/* Header with View Toggle */}
+      <View className="flex-row items-center justify-between px-6 mb-6">
+        <Text className="text-4xl font-light text-white">LYRIQ</Text>
+        <Pressable
+          onPress={() => togglePerformanceMode(true)}
+          className="p-2"
+        >
+          <Ionicons name="eye" size={24} color="#9CA3AF" />
+        </Pressable>
       </View>
 
       {/* Sections Container with Swipe-Up Gesture */}

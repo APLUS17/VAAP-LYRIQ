@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLyricStore } from '../state/lyricStore';
@@ -109,10 +109,57 @@ export default function PerformanceView() {
   const insets = useSafeAreaInsets();
   const { sections, togglePerformanceMode } = useLyricStore();
 
-  // Combine all sections into readable text
-  const combinedLyrics = sections.map(section => {
-    return `[${section.title}]\n${section.content || '...'}\n`;
-  }).join('\n');
+  // Disable keyboard in read-only mode
+  React.useEffect(() => {
+    Keyboard.dismiss();
+  }, []);
+
+  // Render structured lyrics with proper formatting
+  const renderLyrics = () => {
+    if (sections.length === 0) {
+      return (
+        <View className="items-center py-12">
+          <Ionicons name="musical-notes-outline" size={48} color="#4B5563" />
+          <Text className="text-gray-400 text-center mt-4 text-lg">
+            No lyrics written yet.{'\n'}Tap "Edit" to start writing.
+          </Text>
+        </View>
+      );
+    }
+
+    return sections.map((section, index) => (
+      <View key={section.id} className="mb-8">
+        {/* Section Header */}
+        <View 
+          className="mb-4 px-4 py-2 rounded-lg self-start"
+          style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
+        >
+          <Text 
+            className="text-blue-300 font-semibold text-lg"
+            style={{ fontFamily: 'System' }}
+          >
+            [{section.title}]
+          </Text>
+        </View>
+        
+        {/* Section Content */}
+        <Text 
+          className="text-gray-200 text-lg leading-8 pl-2"
+          style={{ 
+            fontFamily: 'Georgia',
+            lineHeight: 32,
+          }}
+          selectable={false} // Prevent text selection and keyboard popup
+        >
+          {section.content || (
+            <Text className="text-gray-500 italic">
+              (No lyrics written for this section)
+            </Text>
+          )}
+        </Text>
+      </View>
+    ));
+  };
 
   return (
     <View className="flex-1" style={{ 
@@ -122,48 +169,71 @@ export default function PerformanceView() {
       {/* Header with View Toggle */}
       <View className="flex-row items-center justify-between px-6 mb-6">
         <Text className="text-4xl font-light text-white">LYRIQ</Text>
-        <Pressable
-          onPress={() => togglePerformanceMode(false)}
-          className="p-2"
-        >
-          <Ionicons name="grid" size={24} color="#9CA3AF" />
-        </Pressable>
-      </View>
-
-      {/* Audio Player */}
-      <AudioPlayer />
-
-      {/* Lyrics Display */}
-      <View className="flex-1 px-6">
-        <ScrollView 
-          className="flex-1"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        >
-          <Text 
-            className="text-lg leading-8 text-gray-200"
-            style={{ fontFamily: 'Georgia' }}
-          >
-            {combinedLyrics || 'No lyrics written yet.\nTap "Edit" to start writing.'}
-          </Text>
-        </ScrollView>
-
-        {/* Edit Button */}
-        <View className="absolute bottom-6 right-6">
+        <View className="flex-row items-center" style={{ gap: 16 }}>
           <Pressable
             onPress={() => togglePerformanceMode(false)}
-            className="bg-gray-700 px-6 py-3 rounded-full flex-row items-center"
+            className="bg-gray-800 px-4 py-2 rounded-lg flex-row items-center"
             style={{
               shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 8,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.2,
+              shadowRadius: 4,
+              elevation: 4,
             }}
           >
-            <Ionicons name="create" size={16} color="white" />
-            <Text className="text-white font-medium ml-2">edit</Text>
+            <Ionicons name="create" size={16} color="#9CA3AF" />
+            <Text className="text-gray-300 font-medium ml-2 text-sm">edit</Text>
           </Pressable>
+          
+          <Pressable
+            onPress={() => togglePerformanceMode(false)}
+            className="p-2"
+          >
+            <Ionicons name="apps" size={24} color="#9CA3AF" />
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Sticky Audio Player */}
+      <View style={{
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 8,
+      }}>
+        <AudioPlayer />
+      </View>
+
+      {/* Lyrics Display with Enhanced Styling */}
+      <View className="flex-1" style={{ paddingBottom: insets.bottom }}>
+        <ScrollView 
+          className="flex-1 px-6"
+          showsVerticalScrollIndicator={true}
+          indicatorStyle="white"
+          contentContainerStyle={{ 
+            paddingTop: 24,
+            paddingBottom: 40,
+          }}
+          // Smooth scroll behavior
+          decelerationRate="normal"
+          scrollEventThrottle={16}
+        >
+          {renderLyrics()}
+          
+          {/* Bottom spacing for safe area */}
+          <View style={{ height: Math.max(insets.bottom, 20) }} />
+        </ScrollView>
+
+        {/* Mini Progress Bar for Scrolling Context */}
+        <View 
+          className="absolute bottom-0 left-6 right-6 h-1 bg-gray-800 rounded-full"
+          style={{ marginBottom: insets.bottom + 8 }}
+        >
+          <View 
+            className="h-full bg-blue-500 rounded-full"
+            style={{ width: '42%' }} // Matches audio progress
+          />
         </View>
       </View>
     </View>

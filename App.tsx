@@ -263,17 +263,9 @@ function MainScreen() {
         <Text className="text-4xl font-light text-white">LYRIQ</Text>
         <Pressable
           onPress={() => togglePerformanceMode(true)}
-          className="bg-gray-800 px-4 py-2 rounded-lg flex-row items-center"
-          style={{
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.2,
-            shadowRadius: 4,
-            elevation: 4,
-          }}
+          className="p-2"
         >
-          <Ionicons name="play" size={16} color="#9CA3AF" />
-          <Text className="text-gray-300 font-medium ml-2 text-sm">view</Text>
+          <Ionicons name="play" size={24} color="#9CA3AF" />
         </Pressable>
       </View>
 

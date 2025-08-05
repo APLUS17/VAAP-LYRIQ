@@ -169,29 +169,12 @@ export default function PerformanceView() {
       {/* Header with View Toggle */}
       <View className="flex-row items-center justify-between px-6 mb-6">
         <Text className="text-4xl font-light text-white">LYRIQ</Text>
-        <View className="flex-row items-center" style={{ gap: 16 }}>
-          <Pressable
-            onPress={() => togglePerformanceMode(false)}
-            className="bg-gray-800 px-4 py-2 rounded-lg flex-row items-center"
-            style={{
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.2,
-              shadowRadius: 4,
-              elevation: 4,
-            }}
-          >
-            <Ionicons name="create" size={16} color="#9CA3AF" />
-            <Text className="text-gray-300 font-medium ml-2 text-sm">edit</Text>
-          </Pressable>
-          
-          <Pressable
-            onPress={() => togglePerformanceMode(false)}
-            className="p-2"
-          >
-            <Ionicons name="apps" size={24} color="#9CA3AF" />
-          </Pressable>
-        </View>
+        <Pressable
+          onPress={() => togglePerformanceMode(false)}
+          className="p-2"
+        >
+          <Ionicons name="create" size={24} color="#9CA3AF" />
+        </Pressable>
       </View>
 
       {/* Sticky Audio Player */}

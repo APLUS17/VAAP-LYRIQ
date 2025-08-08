@@ -30,13 +30,15 @@ export default function Recorder({
       intervalId = setInterval(() => {
         setTime((t) => t + 1);
       }, 1000);
-    } else {
+    } else if (time > 0) {
       onStop?.(time);
       setTime(0);
     }
     
-    return () => clearInterval(intervalId);
-  }, [submitted, time, onStart, onStop]);
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [submitted]); // Fixed: removed time, onStart, onStop from dependencies
 
   React.useEffect(() => {
     if (!isDemo) return;
@@ -62,17 +64,19 @@ export default function Recorder({
     
     if (submitted) {
       const animateBars = () => {
-        setBarHeights(Array(visualizerBars).fill(0).map(() => 
-          4 + Math.random() * 20
-        ));
+        setBarHeights(prevHeights => 
+          prevHeights.map((_, i) => 4 + Math.random() * 20)
+        );
         animationId = setTimeout(animateBars, 100);
       };
-      animateBars();
+      animationId = setTimeout(animateBars, 100); // Fixed: start animation immediately
     } else {
       setBarHeights(Array(visualizerBars).fill(4));
     }
     
-    return () => clearTimeout(animationId);
+    return () => {
+      if (animationId) clearTimeout(animationId);
+    };
   }, [submitted, visualizerBars]);
 
   const formatTime = (seconds: number) => {

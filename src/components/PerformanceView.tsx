@@ -11,6 +11,12 @@ function AudioPlayer() {
   const [currentTime, setCurrentTime] = useState(65); // 1:05
   const [totalTime] = useState(154); // 2:34
   const [progress, setProgress] = useState(0.42); // 42% progress
+  
+  // Fixed waveform heights to prevent re-render performance issues
+  const waveHeights = React.useMemo(() => 
+    Array.from({ length: 80 }, (_, i) => Math.sin(i * 0.2) * 12 + Math.sin(i * 0.5) * 6 + 8),
+    []
+  );
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -48,19 +54,16 @@ function AudioPlayer() {
           className="h-16 justify-center"
         >
           <View className="h-12 flex-row items-center justify-center" style={{ gap: 1 }}>
-            {Array.from({ length: 80 }, (_, i) => {
-              const waveHeight = Math.sin(i * 0.2) * 12 + Math.random() * 8 + 4;
-              return (
-                <View
-                  key={i}
-                  className="w-1 rounded-full"
-                  style={{
-                    height: waveHeight,
-                    backgroundColor: i < progress * 80 ? '#FFFF00' : '#4B5563',
-                  }}
-                />
-              );
-            })}
+            {waveHeights.map((height, i) => (
+              <View
+                key={i}
+                className="w-1 rounded-full"
+                style={{
+                  height: Math.max(4, height),
+                  backgroundColor: i < progress * 80 ? '#FFFF00' : '#4B5563',
+                }}
+              />
+            ))}
           </View>
         </Pressable>
         
@@ -128,38 +131,42 @@ export default function PerformanceView() {
       );
     }
 
-    return sections.map((section, index) => (
-      <View key={section.id} className="mb-8">
-        {/* Section Header */}
-        <View 
-          className="mb-4 px-4 py-2 rounded-lg self-start"
-          style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
-        >
-          <Text 
-            className="text-blue-300 font-semibold text-lg"
-            style={{ fontFamily: 'System' }}
+    return sections.map((section, index) => {
+      if (!section || !section.id) return null; // Safety check
+      
+      return (
+        <View key={section.id} className="mb-8">
+          {/* Section Header */}
+          <View 
+            className="mb-4 px-4 py-2 rounded-lg self-start"
+            style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
           >
-            [{section.title}]
+            <Text 
+              className="text-blue-300 font-semibold text-lg"
+              style={{ fontFamily: 'System' }}
+            >
+              [{section.title || 'Untitled'}]
+            </Text>
+          </View>
+          
+          {/* Section Content */}
+          <Text 
+            className="text-gray-200 text-lg leading-8 pl-2"
+            style={{ 
+              fontFamily: 'Georgia',
+              lineHeight: 32,
+            }}
+            selectable={false} // Prevent text selection and keyboard popup
+          >
+            {section.content || (
+              <Text className="text-gray-500 italic">
+                (No lyrics written for this section)
+              </Text>
+            )}
           </Text>
         </View>
-        
-        {/* Section Content */}
-        <Text 
-          className="text-gray-200 text-lg leading-8 pl-2"
-          style={{ 
-            fontFamily: 'Georgia',
-            lineHeight: 32,
-          }}
-          selectable={false} // Prevent text selection and keyboard popup
-        >
-          {section.content || (
-            <Text className="text-gray-500 italic">
-              (No lyrics written for this section)
-            </Text>
-          )}
-        </Text>
-      </View>
-    ));
+      );
+    }).filter(Boolean); // Remove null entries
   };
 
   return (
@@ -208,7 +215,7 @@ export default function PerformanceView() {
       <View 
         className="flex-row items-center justify-between px-8"
         style={{ 
-          paddingBottom: Math.max(insets.bottom, 20),
+          paddingBottom: Math.max(insets.bottom || 0, 20),
           paddingTop: 16,
         }}
       >

@@ -49,10 +49,10 @@ function SectionCard({ section, updateSection, updateSectionType, removeSection 
     onActive: (event, context: any) => {
       const isHorizontal = Math.abs(event.translationX) > Math.abs(event.translationY);
       
-      if (isHorizontal) {
+      if (isHorizontal && context.startX !== undefined) {
         // Horizontal swipe - only allow left swipe for delete
         translateX.value = Math.min(0, context.startX + event.translationX);
-      } else {
+      } else if (context.startY !== undefined) {
         // Vertical drag for reordering - constrain to Y-axis only
         translateY.value = context.startY + event.translationY;
         translateX.value = withSpring(0); // Always snap back to center horizontally
@@ -65,8 +65,10 @@ function SectionCard({ section, updateSection, updateSectionType, removeSection 
       if (isHorizontal && translateX.value < -100) {
         // Swipe left to delete
         translateX.value = withTiming(-400, { duration: 300 });
-        opacity.value = withTiming(0, { duration: 300 }, () => {
-          runOnJS(removeSection)(section.id);
+        opacity.value = withTiming(0, { duration: 300 }, (finished) => {
+          if (finished) {
+            runOnJS(removeSection)(section.id);
+          }
         });
       } else {
         // Snap back to original position
@@ -241,8 +243,12 @@ function MainScreen() {
   /* ✅ ALWAYS call this hook - logic inside handler, not around hook */
   const swipeUpGestureHandler = useAnimatedGestureHandler({
     onEnd: (event) => {
-      // Detect upward swipe from bottom area
-      if (event.translationY < -50 && event.velocityY < -500 && event.absoluteY > 600) {
+      // Detect upward swipe from bottom area with safe bounds
+      const screenHeight = 800; // approximate screen height
+      const isFromBottom = event.absoluteY > screenHeight * 0.6; // bottom 40% of screen
+      const isUpwardSwipe = event.translationY < -50 && event.velocityY < -500;
+      
+      if (isUpwardSwipe && isFromBottom) {
         runOnJS(toggleRecordingModal)(true);
       }
     },

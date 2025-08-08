@@ -50,14 +50,19 @@ export const useLyricStore = create<LyricState>()(
       sections: [],
       
       addSection: (type) => set((state) => {
-        const newSection: LyricSection = {
-          id: Date.now().toString(),
-          type,
-          title: type.charAt(0).toUpperCase() + type.slice(1),
-          content: '',
-          count: 1,
-        };
-        return { sections: [...state.sections, newSection] };
+        try {
+          const newSection: LyricSection = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9), // More unique ID
+            type: type || 'verse',
+            title: (type || 'verse').charAt(0).toUpperCase() + (type || 'verse').slice(1),
+            content: '',
+            count: 1,
+          };
+          return { sections: [...(state.sections || []), newSection] };
+        } catch (error) {
+          console.warn('Error adding section:', error);
+          return state;
+        }
       }),
 
       updateSection: (id, content) => set((state) => ({

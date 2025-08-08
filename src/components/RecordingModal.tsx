@@ -43,8 +43,10 @@ export default function RecordingModal() {
     },
     onActive: (event, context: any) => {
       // Only allow downward swipe to dismiss
-      const newTranslateY = Math.max(0, context.startY + event.translationY);
-      translateY.value = newTranslateY;
+      if (context.startY !== undefined) {
+        const newTranslateY = Math.max(0, context.startY + event.translationY);
+        translateY.value = newTranslateY;
+      }
     },
     onEnd: (event) => {
       if (event.translationY > 100 || event.velocityY > 500) {

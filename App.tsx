@@ -122,12 +122,13 @@ function SectionCard({ section, updateSection, updateSectionType, removeSection 
           style={[
             {
               backgroundColor: '#2A2A2A',
-              borderRadius: 12,
+              borderRadius: 14,
               padding: 16,
               shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowRadius: 8,
-              elevation: 4,
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.22,
+              shadowRadius: 12,
+              elevation: 7,
               zIndex: 1,
             },
             animatedStyle
@@ -212,10 +213,10 @@ function AddSectionButton({ onPress }: { onPress: () => void }) {
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center bg-gray-700 px-4 py-3 rounded-lg mb-6"
+      className="flex-row items-center px-4 py-2 rounded-lg mb-6 border border-gray-700 bg-gray-800/60"
     >
-      <Text className="text-gray-200 font-medium">add section</Text>
-      <Text className="text-gray-200 ml-2 text-lg">+</Text>
+      <Text className="text-gray-300 font-medium">add section</Text>
+      <Text className="text-gray-400 ml-2 text-lg">+</Text>
     </Pressable>
   );
 }
@@ -287,9 +288,10 @@ function MainScreen() {
             accessibilityLabel="Open sidebar menu"
             onPress={() => setSidebarVisible(true)}
             className="pr-3"
+            style={{ padding: 10, marginHorizontal: -10 }}
           >
-            <View style={{ width: 18 }}>
-              <View style={{ height: 2, backgroundColor: '#9CA3AF', borderRadius: 1, marginBottom: 3 }} />
+            <View style={{ width: 22 }}>
+              <View style={{ height: 2, backgroundColor: '#9CA3AF', borderRadius: 1, marginBottom: 4 }} />
               <View style={{ height: 2, backgroundColor: '#9CA3AF', borderRadius: 1 }} />
             </View>
           </Pressable>

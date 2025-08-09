@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, useNavigation } from "@react-navigation/native";
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, Text, Pressable, TextInput, Modal, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,6 +21,7 @@ import { useLyricStore } from './src/state/lyricStore';
 import RecordingModal from './src/components/RecordingModal';
 import { Sidebar } from './src/components/Sidebar';
 import PerformanceView from './src/components/PerformanceView';
+import ProjectsScreen from './src/screens/ProjectsScreen';
 
 
 
@@ -226,6 +228,7 @@ function MainScreen() {
   /* 🚨 Hooks: ALWAYS top-level, same order every render */
   const insets = useSafeAreaInsets();
   const [isSidebarVisible, setSidebarVisible] = useState(false);
+  const navigation = useNavigation<any>();
   
   const { 
     sections, 
@@ -247,8 +250,8 @@ function MainScreen() {
   }, [toggleRecordingModal]);
 
   const handleSelectProject = useCallback((_projectId: string) => {
-    // Placeholder for future project handling
-  }, []);
+    navigation.navigate('Projects');
+  }, [navigation]);
 
   const handleNewSong = useCallback(() => {
     addSection('verse');
@@ -353,11 +356,15 @@ function MainScreen() {
 }
 
 export default function App() {
+  const Stack = createNativeStackNavigator();
   return (
     <GestureHandlerRootView className="flex-1">
       <SafeAreaProvider>
         <NavigationContainer>
-          <MainScreen />
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Main" component={MainScreen} />
+            <Stack.Screen name="Projects" component={ProjectsScreen} />
+          </Stack.Navigator>
           <StatusBar style="dark" />
         </NavigationContainer>
       </SafeAreaProvider>

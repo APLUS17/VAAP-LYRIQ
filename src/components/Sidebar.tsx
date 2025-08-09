@@ -19,15 +19,15 @@ import Animated, {
 interface SidebarProps {
   visible: boolean;
   onClose: () => void;
-  onSelectTool: (tool: string) => void;
-  onSelectProject: (project: string) => void;
-  onNewSong: () => void;
+  // The following callbacks are retained for compatibility, but not used in this minimalist drawer
+  onSelectTool?: (tool: string) => void;
+  onSelectProject?: (project: string) => void;
+  onNewSong?: () => void;
 }
 
-export function Sidebar({ visible, onClose, onSelectTool, onSelectProject, onNewSong }: SidebarProps) {
+export function Sidebar({ visible, onClose }: SidebarProps) {
   const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState('');
-  const [projectsExpanded, setProjectsExpanded] = useState(true);
   
   const translateX = useSharedValue(-100);
   const opacity = useSharedValue(0);
@@ -50,22 +50,13 @@ export function Sidebar({ visible, onClose, onSelectTool, onSelectProject, onNew
     transform: [{ translateX: `${translateX.value}%` }],
   }));
 
-  const tools = [
-    { id: 'mumbl', name: 'MUMBL', icon: '🎙️', description: 'Auto-humming & melody gen' },
+  // Minimal sections to mirror the OpenAI app
+  const menuItems = [
+    { id: 'chatgpt', label: 'ChatGPT', icon: (color: string) => <Ionicons name="infinite-outline" size={22} color={color} /> },
+    { id: 'library', label: 'Library', icon: (color: string) => <Ionicons name="images-outline" size={22} color={color} /> },
+    { id: 'codex', label: 'Codex', icon: (color: string) => <Ionicons name="code-slash-outline" size={22} color={color} /> },
+    { id: 'gpts', label: 'GPTs', icon: (color: string) => <Ionicons name="apps-outline" size={22} color={color} /> },
   ];
-
-  const projects = [
-    { id: 'muse2', name: 'MUSE 2.0', lastEdited: '2 days ago' },
-    { id: 'prompt', name: 'PROMPT MASTER', lastEdited: '1 week ago' },
-    { id: 'baes', name: 'BAES STUFF', lastEdited: '2 weeks ago' },
-  ];
-
-  const songs: any[] = [];
-
-  const filteredSongs = songs.filter(song => 
-    song.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    song.preview.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <Modal
@@ -97,7 +88,7 @@ export function Sidebar({ visible, onClose, onSelectTool, onSelectProject, onNew
           style={[
             {
               width: '85%',
-              backgroundColor: '#1C1C1E',
+              backgroundColor: '#000',
               paddingTop: insets.top,
               paddingBottom: insets.bottom,
             },
@@ -105,131 +96,44 @@ export function Sidebar({ visible, onClose, onSelectTool, onSelectProject, onNew
           ]}
         >
           <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-            {/* Search */}
-            <View className="px-4 pb-4">
-              <View className="flex-row items-center bg-gray-800 rounded-xl px-4 py-3">
-                <Ionicons name="search" size={18} color="#8E8E93" />
-                <TextInput
-                  placeholder="Search"
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  className="flex-1 ml-3 text-white text-base"
-                  placeholderTextColor="#8E8E93"
-                />
+            {/* Top Search with pen icon */}
+            <View className="px-4 pt-2 pb-5">
+              <View className="flex-row items-center justify-between">
+                <View className="flex-1 mr-3 bg-[#1F1F1F] rounded-2xl px-4 py-3 flex-row items-center">
+                  <Ionicons name="search" size={18} color="#8E8E93" />
+                  <TextInput
+                    placeholder="Search"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    className="flex-1 ml-3 text-white text-base"
+                    placeholderTextColor="#8E8E93"
+                  />
+                </View>
+                <Pressable
+                  accessibilityLabel="Compose"
+                  className="w-10 h-10 rounded-xl items-center justify-center"
+                  style={{ backgroundColor: '#1F1F1F' }}
+                >
+                  <Ionicons name="create-outline" size={20} color="#FFFFFF" />
+                </Pressable>
               </View>
             </View>
 
-            {/* Tools Section */}
-            <View className="px-4 pb-6">
-              <Text className="text-lg font-semibold text-white mb-3">
-                🛠️ Tools
-              </Text>
-              {tools.map((tool) => (
+            {/* Minimal Menu */}
+            <View className="px-4">
+              {menuItems.map((item, index) => (
                 <Pressable
-                  key={tool.id}
-                  onPress={() => {
-                    onSelectTool(tool.id);
-                    onClose();
-                  }}
-                  className="flex-row items-center p-3 rounded-lg mb-2 active:bg-gray-700"
+                  key={item.id}
+                  className="flex-row items-center rounded-2xl px-4 py-3 mb-3 active:bg-[#1F1F1F]"
                 >
-                  <Text className="text-xl mr-3">{tool.icon}</Text>
-                  <View className="flex-1">
-                    <Text className="text-white font-medium">{tool.name}</Text>
-                    <Text className="text-gray-400 text-xs">{tool.description}</Text>
+                  <View className="mr-3">
+                    {item.icon('#FFFFFF')}
                   </View>
+                  <Text className="text-white text-lg font-medium">{item.label}</Text>
                 </Pressable>
               ))}
-            </View>
-
-            {/* Projects Section */}
-            <View className="px-4 pb-6">
-              <Pressable
-                onPress={() => setProjectsExpanded(!projectsExpanded)}
-                className="flex-row items-center justify-between mb-3"
-              >
-                <Text className="text-lg font-semibold text-white">
-                  📁 Projects
-                </Text>
-                <Ionicons
-                  name={projectsExpanded ? "chevron-down" : "chevron-forward"}
-                  size={16}
-                  color="#8E8E93"
-                />
-              </Pressable>
-
-              <Pressable
-                onPress={() => {
-                  onSelectProject('new');
-                  onClose();
-                }}
-                className="flex-row items-center p-3 rounded-lg mb-2 bg-gray-800 active:bg-gray-700"
-              >
-                <Ionicons name="add" size={20} color="#007AFF" />
-                <Text className="text-blue-500 font-medium ml-3">New Project</Text>
-              </Pressable>
-
-              {projectsExpanded && projects.map((project) => (
-                <Pressable
-                  key={project.id}
-                  onPress={() => {
-                    onSelectProject(project.id);
-                    onClose();
-                  }}
-                  className="flex-row items-center p-3 rounded-lg mb-2 active:bg-gray-700"
-                >
-                  <Ionicons name="folder" size={18} color="#8E8E93" />
-                  <View className="flex-1 ml-3">
-                    <Text className="text-white font-medium">{project.name}</Text>
-                    <Text className="text-gray-400 text-xs">{project.lastEdited}</Text>
-                  </View>
-                </Pressable>
-              ))}
-
-              {projectsExpanded && (
-                <Pressable className="flex-row items-center p-3 rounded-lg">
-                  <Text className="text-gray-400 text-sm ml-6">10 more</Text>
-                  <Ionicons name="chevron-down" size={14} color="#8E8E93" className="ml-1" />
-                </Pressable>
-              )}
-            </View>
-
-            {/* Songs Section */}
-            <View className="px-4 pb-6">
-              <Text className="text-lg font-semibold text-white mb-3">
-                🎵 Songs
-              </Text>
-
-              <Pressable
-                onPress={() => {
-                  onNewSong();
-                  onClose();
-                }}
-                className="flex-row items-center p-3 rounded-lg mb-3 bg-gray-800 active:bg-gray-700"
-              >
-                <Ionicons name="add" size={20} color="#007AFF" />
-                <Text className="text-blue-500 font-medium ml-3">New Song</Text>
-              </Pressable>
-
-              {filteredSongs.length === 0 && (
-                <View className="p-4">
-                  <Text className="text-gray-400 text-center text-sm">
-                    No songs yet. Create your first song!
-                  </Text>
-                </View>
-              )}
             </View>
           </ScrollView>
-
-          {/* User Profile */}
-          <View className="px-4 pt-4 border-t border-gray-700">
-            <Pressable className="flex-row items-center p-3 rounded-lg">
-              <View className="w-8 h-8 bg-blue-500 rounded-full items-center justify-center">
-                <Text className="text-white font-bold text-sm">A</Text>
-              </View>
-              <Text className="text-white font-medium ml-3">ayo omoloja</Text>
-            </Pressable>
-          </View>
         </Animated.View>
       </View>
     </Modal>

@@ -365,7 +365,7 @@ export default function App() {
             <Stack.Screen name="Main" component={MainScreen} />
             <Stack.Screen name="Projects" component={ProjectsScreen} />
           </Stack.Navigator>
-          <StatusBar style="dark" />
+          <StatusBar style="light" />
         </NavigationContainer>
       </SafeAreaProvider>
     </GestureHandlerRootView>

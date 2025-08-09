@@ -87,7 +87,7 @@ export function Sidebar({ visible, onClose, onSelectTool, onSelectProject }: Sid
           style={[
             {
               width: '85%',
-              backgroundColor: '#000',
+              backgroundColor: '#1A1A1A',
               paddingTop: insets.top,
               paddingBottom: insets.bottom,
             },

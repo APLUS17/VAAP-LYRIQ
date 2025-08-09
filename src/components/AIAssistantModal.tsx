@@ -142,7 +142,7 @@ export function AIAssistantModal() {
           <Animated.View
             style={[
               {
-                backgroundColor: 'white',
+                backgroundColor: '#1F1F1F',
                 borderTopLeftRadius: 20,
                 borderTopRightRadius: 20,
                 maxHeight: '80%',
@@ -153,12 +153,12 @@ export function AIAssistantModal() {
           >
             {/* Handle */}
             <View className="items-center py-3">
-              <View className="w-8 h-1 bg-gray-300 rounded-full" />
+              <View className="w-8 h-1 bg-gray-700 rounded-full" />
             </View>
 
             {/* Header */}
             <View className="flex-row items-center justify-between px-6 pb-4">
-              <Text className="text-xl font-medium text-gray-900">
+              <Text className="text-xl font-medium text-white">
                 AI Assistant
               </Text>
               <Pressable onPress={handleClose} className="p-2">
@@ -169,7 +169,7 @@ export function AIAssistantModal() {
             <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
               {/* Preset Options */}
               <View className="mb-6">
-                <Text className="text-sm font-medium text-gray-600 mb-3">
+                <Text className="text-sm font-medium text-gray-400 mb-3">
                   Quick Actions
                 </Text>
                 <View className="gap-3">
@@ -178,27 +178,27 @@ export function AIAssistantModal() {
                       key={preset.id}
                       onPress={() => handlePresetPress(preset)}
                       disabled={isLoading}
-                      className={`flex-row items-center p-4 rounded-xl border ${
-                        selectedPreset === preset.id
-                          ? 'bg-blue-50 border-blue-200'
-                          : 'bg-gray-50 border-gray-200'
-                      }`}
+                      className={`flex-row items-center p-4 rounded-xl border`}
+                      style={{
+                        backgroundColor: selectedPreset === preset.id ? '#2A2A2A' : '#202020',
+                        borderColor: selectedPreset === preset.id ? '#3B82F6' : '#2F2F2F',
+                      }}
                     >
                       <Ionicons
                         name={preset.icon as any}
                         size={20}
-                        color={selectedPreset === preset.id ? '#3B82F6' : '#6B7280'}
+                        color={selectedPreset === preset.id ? '#60A5FA' : '#9CA3AF'}
                       />
                       <Text
                         className={`ml-3 text-base ${
-                          selectedPreset === preset.id ? 'text-blue-700' : 'text-gray-700'
+                          selectedPreset === preset.id ? 'text-blue-300' : 'text-gray-300'
                         }`}
                       >
                         {preset.title}
                       </Text>
                       {isLoading && selectedPreset === preset.id && (
                         <View className="ml-auto">
-                          <Ionicons name="hourglass" size={16} color="#3B82F6" />
+                          <Ionicons name="hourglass" size={16} color="#60A5FA" />
                         </View>
                       )}
                     </Pressable>
@@ -208,8 +208,8 @@ export function AIAssistantModal() {
 
               {/* Response */}
               {currentResponse && (
-                <View className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                  <Text className="text-base text-gray-800 leading-6">
+                <View className="mb-6 p-4 rounded-xl border" style={{ backgroundColor: '#202020', borderColor: '#2F2F2F' }}>
+                  <Text className="text-base text-gray-200 leading-6">
                     {currentResponse}
                   </Text>
                 </View>
@@ -217,16 +217,16 @@ export function AIAssistantModal() {
 
               {/* Custom Prompt */}
               <View className="mb-4">
-                <Text className="text-sm font-medium text-gray-600 mb-3">
+                <Text className="text-sm font-medium text-gray-400 mb-3">
                   Ask Anything
                 </Text>
-                <View className="flex-row gap-3">
+                <View className="flex-row items-center">
                   <TextInput
-                    ref={inputRef}
                     placeholder="Ask me anything about your lyrics..."
                     value={customPrompt}
                     onChangeText={setCustomPrompt}
-                    className="flex-1 p-4 bg-gray-50 border border-gray-200 rounded-xl text-base"
+                    className="flex-1 rounded-xl px-4 py-3 text-base"
+                    style={{ backgroundColor: '#202020', borderColor: '#2F2F2F', borderWidth: 1, color: '#E5E7EB' }}
                     placeholderTextColor="#9CA3AF"
                     multiline
                     maxLength={200}
@@ -236,17 +236,12 @@ export function AIAssistantModal() {
                   <Pressable
                     onPress={handleCustomPrompt}
                     disabled={!customPrompt.trim() || isLoading}
-                    className={`w-12 h-12 rounded-xl items-center justify-center ${
-                      customPrompt.trim() && !isLoading
-                        ? 'bg-black'
-                        : 'bg-gray-200'
-                    }`}
+                    className="ml-3 rounded-xl px-4 py-3"
+                    style={{ backgroundColor: customPrompt.trim() && !isLoading ? '#111111' : '#2A2A2A' }}
                   >
-                    <Ionicons
-                      name="send"
-                      size={18}
-                      color={customPrompt.trim() && !isLoading ? 'white' : '#9CA3AF'}
-                    />
+                    <Text className={`font-medium ${customPrompt.trim() && !isLoading ? 'text-white' : 'text-gray-400'}`}>
+                      Submit
+                    </Text>
                   </Pressable>
                 </View>
               </View>

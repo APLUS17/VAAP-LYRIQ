@@ -129,7 +129,7 @@ export function HomeScreen({ onNavigateToLyrics }: HomeScreenProps) {
 
         {/* Record Button */}
         <View className="w-12 h-12 bg-red-500 rounded-full items-center justify-center">
-          <View className="w-6 h-6 bg-white rounded-full" />
+          <View className="w-6 h-6 rounded-full" style={{ backgroundColor: '#E5E7EB' }} />
         </View>
       </View>
 

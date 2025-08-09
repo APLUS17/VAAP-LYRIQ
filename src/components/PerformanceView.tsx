@@ -86,12 +86,13 @@ function AudioPlayer() {
         
         <Pressable
           onPress={handlePlayPause}
-          className="w-16 h-16 rounded-full bg-white items-center justify-center"
+          className="w-16 h-16 rounded-full items-center justify-center"
+          style={{ backgroundColor: '#111111', borderColor: '#2F2F2F', borderWidth: 1 }}
         >
           <Ionicons
             name={isPlaying ? "pause" : "play"}
             size={24}
-            color="black"
+            color="white"
             style={{ marginLeft: isPlaying ? 0 : 2 }}
           />
         </Pressable>

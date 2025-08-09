@@ -23,7 +23,7 @@ export function LyricPadScreen({ onBack }: LyricPadScreenProps = {}) {
   ];
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1" style={{ backgroundColor: '#1A1A1A' }}>
       <ScrollView
         className="flex-1 px-6"
         style={{ paddingTop: insets.top + 20 }}
@@ -41,7 +41,7 @@ export function LyricPadScreen({ onBack }: LyricPadScreenProps = {}) {
           </Pressable>
           
           <View className="flex-1 ml-4">
-            <Text className="text-2xl font-light text-gray-900 mb-1">
+            <Text className="text-2xl font-light text-white mb-1">
               Lyric Pad
             </Text>
             <Text className="text-sm text-gray-500">

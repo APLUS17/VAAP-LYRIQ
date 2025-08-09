@@ -152,12 +152,11 @@ export function InlineAIPopover({
                 key={option.id}
                 onPress={() => handleOptionPress(option)}
                 disabled={isLoading}
-                className={`flex-row items-center p-3 rounded-xl ${
-                  selectedOption === option.id ? 'bg-gray-100' : 'bg-white'
-                }`}
+                className={`flex-row items-center p-3 rounded-xl`}
                 style={{
                   borderWidth: 1,
-                  borderColor: selectedOption === option.id ? option.color : '#E5E7EB',
+                  borderColor: selectedOption === option.id ? option.color : '#2F2F2F',
+                  backgroundColor: selectedOption === option.id ? '#242424' : '#202020',
                 }}
               >
                 <View
@@ -172,7 +171,7 @@ export function InlineAIPopover({
                 </View>
                 <Text
                   className={`text-sm font-medium ${
-                    selectedOption === option.id ? 'text-gray-900' : 'text-gray-700'
+                    selectedOption === option.id ? 'text-gray-100' : 'text-gray-300'
                   }`}
                 >
                   {option.title}
@@ -182,8 +181,8 @@ export function InlineAIPopover({
           </View>
 
           {/* Footer */}
-          <View className="mt-4 pt-3 border-t border-gray-100">
-            <Text className="text-xs text-gray-500 text-center">
+          <View className="mt-4 pt-3 border-t border-gray-800">
+            <Text className="text-xs text-gray-400 text-center">
               Tap an option for AI suggestions
             </Text>
           </View>

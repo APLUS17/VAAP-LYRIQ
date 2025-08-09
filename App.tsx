@@ -18,6 +18,7 @@ import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-
 // Import the new modular components
 import { useLyricStore } from './src/state/lyricStore';
 import RecordingModal from './src/components/RecordingModal';
+import { Sidebar } from './src/components/Sidebar';
 import PerformanceView from './src/components/PerformanceView';
 
 
@@ -223,6 +224,7 @@ function AddSectionButton({ onPress }: { onPress: () => void }) {
 function MainScreen() {
   /* 🚨 Hooks: ALWAYS top-level, same order every render */
   const insets = useSafeAreaInsets();
+  const [isSidebarVisible, setSidebarVisible] = useState(false);
   
   const { 
     sections, 
@@ -236,6 +238,20 @@ function MainScreen() {
     isPerformanceMode,
     togglePerformanceMode
   } = useLyricStore();
+
+  const handleSelectTool = useCallback((toolId: string) => {
+    if (toolId === 'mumbl') {
+      toggleRecordingModal(true);
+    }
+  }, [toggleRecordingModal]);
+
+  const handleSelectProject = useCallback((_projectId: string) => {
+    // Placeholder for future project handling
+  }, []);
+
+  const handleNewSong = useCallback(() => {
+    addSection('verse');
+  }, [addSection]);
 
   /* callback to open modal */
   const openRecorder = useCallback(() => toggleRecordingModal(true), [toggleRecordingModal]);
@@ -266,7 +282,19 @@ function MainScreen() {
     }}>
       {/* Header with View Toggle */}
       <View className="flex-row items-center justify-between px-6 mb-6">
-        <Text className="text-4xl font-light text-white">LYRIQ</Text>
+        <View className="flex-row items-center">
+          <Pressable
+            accessibilityLabel="Open sidebar menu"
+            onPress={() => setSidebarVisible(true)}
+            className="pr-3"
+          >
+            <View style={{ width: 18 }}>
+              <View style={{ height: 2, backgroundColor: '#9CA3AF', borderRadius: 1, marginBottom: 3 }} />
+              <View style={{ height: 2, backgroundColor: '#9CA3AF', borderRadius: 1 }} />
+            </View>
+          </Pressable>
+          <Text className="text-4xl font-light text-white">LYRIQ</Text>
+        </View>
         <Pressable
           onPress={() => togglePerformanceMode(true)}
           className="p-2"
@@ -306,23 +334,14 @@ function MainScreen() {
             )}
           </ScrollView>
 
-          {/* Recording Launch Button */}
-          <View className="absolute bottom-4 left-0 right-0 items-center">
-            <Pressable 
-              onPress={openRecorder}
-              className="bg-red-500 w-16 h-16 rounded-full items-center justify-center"
-              style={{
-                shadowColor: '#EF4444',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 8,
-              }}
-            >
-              <Ionicons name="mic" size={24} color="white" />
-            </Pressable>
-            <Text className="text-gray-400 text-xs mt-2">Swipe up to record</Text>
-          </View>
+          {/* Sidebar Modal */}
+          <Sidebar
+            visible={isSidebarVisible}
+            onClose={() => setSidebarVisible(false)}
+            onSelectTool={handleSelectTool}
+            onSelectProject={handleSelectProject}
+            onNewSong={handleNewSong}
+          />
         </Animated.View>
       </PanGestureHandler>
 

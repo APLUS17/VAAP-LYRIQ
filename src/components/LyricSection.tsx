@@ -17,7 +17,7 @@ export function LyricSection({ section }: LyricSectionProps) {
         onPress={() => toggleCollapse(section.id)}
         className="flex-row items-center justify-between mb-3"
       >
-        <Text className="text-lg font-medium text-gray-900">
+        <Text className="text-lg font-medium text-gray-200">
           {section.title}
         </Text>
         <View className="flex-row items-center">
@@ -42,10 +42,14 @@ export function LyricSection({ section }: LyricSectionProps) {
           placeholder={`Write your ${section.type} here...`}
           value={section.content}
           onChangeText={(text) => updateSection(section.id, text)}
-          className="bg-white border border-gray-200 rounded-lg p-4 min-h-[100px] text-base leading-6"
+          className="rounded-lg p-4 min-h-[100px] text-base leading-6"
           style={{
             fontFamily: 'Georgia',
             textAlignVertical: 'top',
+            backgroundColor: '#202020',
+            borderColor: '#2F2F2F',
+            borderWidth: 1,
+            color: '#E5E7EB',
           }}
           placeholderTextColor="#9CA3AF"
         />

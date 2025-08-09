@@ -95,11 +95,14 @@ export function AIPopover({
         onPress={onClose}
       >
         <View
-          className="absolute bg-white border border-gray-200 rounded-2xl shadow-lg px-2 py-2"
+          className="absolute rounded-2xl shadow-lg px-2 py-2"
           style={{
             left: Math.min(position.x, screenWidth - 200),
             top: position.y + 10,
             minWidth: 180,
+            backgroundColor: '#1F1F1F',
+            borderColor: '#2F2F2F',
+            borderWidth: 1,
           }}
         >
           {actions.map((action, index) => (
@@ -115,7 +118,7 @@ export function AIPopover({
             >
               <View className="w-6 h-6 mr-3 items-center justify-center">
                 {loading === action.id ? (
-                  <View className="w-4 h-4 border border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+                  <View className="w-4 h-4 border border-gray-700 border-t-blue-500 rounded-full animate-spin" />
                 ) : (
                   <Ionicons 
                     name={action.icon as any} 
@@ -124,7 +127,7 @@ export function AIPopover({
                   />
                 )}
               </View>
-              <Text className="text-gray-900 text-sm font-medium">
+              <Text className="text-gray-100 text-sm font-medium">
                 {action.label}
               </Text>
             </Pressable>

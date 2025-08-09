@@ -113,7 +113,7 @@ export function LibraryScreen({ onBack, onOpenLyric, onOpenMumble }: LibraryScre
   const formatDate = (dateString: string) => dateString;
 
   return (
-    <View className="flex-1 bg-black" style={{ paddingTop: insets.top }}>
+    <View className="flex-1" style={{ paddingTop: insets.top, backgroundColor: '#1A1A1A' }}>
       {/* Header */}
       <View className="flex-row items-center justify-between px-6 py-4">
         <Pressable onPress={onBack} className="p-2 -ml-2">
@@ -187,12 +187,12 @@ export function LibraryScreen({ onBack, onOpenLyric, onOpenMumble }: LibraryScre
                 className="mb-6"
                 style={{ width: cardWidth }}
               >
-                <View className="bg-gray-900 rounded-2xl overflow-hidden">
+                <View className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#2A2A2A' }}>
                   <View 
-                    className="bg-gray-700 items-center justify-center"
-                    style={{ height: cardWidth, width: cardWidth }}
+                    className="items-center justify-center"
+                    style={{ height: cardWidth, width: cardWidth, backgroundColor: '#303030' }}
                   >
-                    <View className="w-16 h-16 bg-gray-600 rounded-full items-center justify-center">
+                    <View className="w-16 h-16 rounded-full items-center justify-center" style={{ backgroundColor: '#3A3A3A' }}>
                       <Ionicons name="musical-notes" size={24} color="#9CA3AF" />
                     </View>
                   </View>
@@ -224,7 +224,7 @@ export function LibraryScreen({ onBack, onOpenLyric, onOpenMumble }: LibraryScre
                 className="mb-6"
                 style={{ width: cardWidth }}
               >
-                <View className="bg-gray-900 rounded-2xl overflow-hidden">
+                <View className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#2A2A2A' }}>
                   <View 
                     className="bg-gradient-to-br from-orange-500 to-red-600 items-center justify-center"
                     style={{ height: cardWidth, width: cardWidth }}

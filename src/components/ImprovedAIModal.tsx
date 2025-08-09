@@ -219,16 +219,16 @@ export function ImprovedAIModal({ visible, onClose }: ImprovedAIModalProps) {
           >
             {/* Handle */}
             <View className="items-center py-4">
-              <View className="w-10 h-1 bg-gray-300 rounded-full" />
+              <View className="w-10 h-1 bg-gray-700 rounded-full" />
             </View>
 
             {/* Header */}
             <View className="flex-row items-center justify-between px-6 pb-6">
               <View>
-                <Text className="text-2xl font-semibold text-gray-900">
+                <Text className="text-2xl font-semibold text-white">
                   AI Assistant
                 </Text>
-                <Text className="text-sm text-gray-500 mt-1">
+                <Text className="text-sm text-gray-400 mt-1">
                   Get creative help with your lyrics
                 </Text>
               </View>
@@ -240,7 +240,7 @@ export function ImprovedAIModal({ visible, onClose }: ImprovedAIModalProps) {
             <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
               {/* Quick Actions */}
               <View className="mb-6">
-                <Text className="text-lg font-medium text-gray-900 mb-4">
+                <Text className="text-lg font-medium text-gray-200 mb-4">
                   Quick Actions
                 </Text>
                 <View className="gap-3">
@@ -249,20 +249,20 @@ export function ImprovedAIModal({ visible, onClose }: ImprovedAIModalProps) {
                       key={preset.id}
                       onPress={() => handlePresetPress(preset)}
                       disabled={isLoading}
-                      className={`flex-row items-center p-4 rounded-xl border-2 ${
-                        selectedPreset === preset.id
-                          ? 'bg-black border-black'
-                          : 'bg-white border-gray-200'
-                      }`}
+                      className={`flex-row items-center p-4 rounded-xl border-2`}
+                      style={{
+                        backgroundColor: selectedPreset === preset.id ? '#111111' : '#202020',
+                        borderColor: selectedPreset === preset.id ? '#111111' : '#2F2F2F',
+                      }}
                     >
                       <Ionicons
                         name={preset.icon as any}
                         size={20}
-                        color={selectedPreset === preset.id ? 'white' : '#6B7280'}
+                        color={selectedPreset === preset.id ? 'white' : '#9CA3AF'}
                       />
                       <Text
                         className={`ml-3 text-base font-medium ${
-                          selectedPreset === preset.id ? 'text-white' : 'text-gray-700'
+                          selectedPreset === preset.id ? 'text-white' : 'text-gray-300'
                         }`}
                       >
                         {preset.title}
@@ -280,23 +280,24 @@ export function ImprovedAIModal({ visible, onClose }: ImprovedAIModalProps) {
               {/* AI Response */}
               {(response || isLoading) && (
                 <View className="mb-6">
-                  <Text className="text-lg font-medium text-gray-900 mb-3">
+                  <Text className="text-lg font-medium text-gray-200 mb-3">
                     AI Suggestion
                   </Text>
-                  <View className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <View className="p-4 rounded-xl border" style={{ backgroundColor: '#202020', borderColor: '#2F2F2F' }}>
                     {isLoading ? (
                       <View className="flex-row items-center">
                         <Ionicons name="hourglass" size={16} color="#6B7280" />
-                        <Text className="ml-2 text-gray-600">Thinking...</Text>
+                        <Text className="ml-2 text-gray-400">Thinking...</Text>
                       </View>
                     ) : (
                       <>
-                        <Text className="text-base text-gray-800 leading-6 mb-4">
+                        <Text className="text-base text-gray-200 leading-6 mb-4">
                           {response}
                         </Text>
                         <Pressable
                           onPress={handleAddToLyrics}
-                          className="bg-black rounded-lg py-3 px-4 self-start"
+                          className="rounded-lg py-3 px-4 self-start"
+                          style={{ backgroundColor: '#111111' }}
                         >
                           <Text className="text-white font-medium">
                             Add to Lyrics
@@ -310,7 +311,7 @@ export function ImprovedAIModal({ visible, onClose }: ImprovedAIModalProps) {
 
               {/* Custom Prompt */}
               <View className="mb-6">
-                <Text className="text-lg font-medium text-gray-900 mb-3">
+                <Text className="text-lg font-medium text-gray-200 mb-3">
                   Ask Anything
                 </Text>
                 <View className="gap-3">
@@ -318,7 +319,8 @@ export function ImprovedAIModal({ visible, onClose }: ImprovedAIModalProps) {
                     placeholder="Ask me anything about your lyrics..."
                     value={customPrompt}
                     onChangeText={setCustomPrompt}
-                    className="p-4 bg-gray-50 border border-gray-200 rounded-xl text-base"
+                    className="p-4 rounded-xl text-base"
+                    style={{ backgroundColor: '#202020', borderColor: '#2F2F2F', borderWidth: 1, color: '#E5E7EB' }}
                     placeholderTextColor="#9CA3AF"
                     multiline
                     maxLength={200}
@@ -326,24 +328,14 @@ export function ImprovedAIModal({ visible, onClose }: ImprovedAIModalProps) {
                   <Pressable
                     onPress={handleCustomPrompt}
                     disabled={!customPrompt.trim() || isLoading}
-                    className={`flex-row items-center justify-center py-3 px-4 rounded-xl ${
-                      customPrompt.trim() && !isLoading
-                        ? 'bg-black'
-                        : 'bg-gray-200'
-                    }`}
+                    className="flex-row items-center justify-center py-3 px-4 rounded-xl"
+                    style={{ backgroundColor: customPrompt.trim() && !isLoading ? '#111111' : '#2A2A2A' }}
                   >
                     <Ionicons
                       name="send"
                       size={16}
                       color={customPrompt.trim() && !isLoading ? 'white' : '#9CA3AF'}
                     />
-                    <Text
-                      className={`ml-2 font-medium ${
-                        customPrompt.trim() && !isLoading ? 'text-white' : 'text-gray-500'
-                      }`}
-                    >
-                      Ask AI
-                    </Text>
                   </Pressable>
                 </View>
               </View>

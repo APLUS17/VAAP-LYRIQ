@@ -25,9 +25,10 @@ interface SidebarProps {
   onNewSong?: () => void;
 }
 
-export function Sidebar({ visible, onClose }: SidebarProps) {
+export function Sidebar({ visible, onClose, onSelectTool, onSelectProject }: SidebarProps) {
   const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSettingsVisible, setSettingsVisible] = useState(false);
   
   const translateX = useSharedValue(-100);
   const opacity = useSharedValue(0);
@@ -52,10 +53,9 @@ export function Sidebar({ visible, onClose }: SidebarProps) {
 
   // Minimal sections to mirror the OpenAI app
   const menuItems = [
-    { id: 'chatgpt', label: 'ChatGPT', icon: (color: string) => <Ionicons name="infinite-outline" size={22} color={color} /> },
-    { id: 'library', label: 'Library', icon: (color: string) => <Ionicons name="images-outline" size={22} color={color} /> },
-    { id: 'codex', label: 'Codex', icon: (color: string) => <Ionicons name="code-slash-outline" size={22} color={color} /> },
-    { id: 'gpts', label: 'GPTs', icon: (color: string) => <Ionicons name="apps-outline" size={22} color={color} /> },
+    { id: 'lyriq', label: 'LYRIQ', icon: (color: string) => <Ionicons name="musical-notes-outline" size={22} color={color} /> },
+    { id: 'projects', label: 'Projects', icon: (color: string) => <Ionicons name="folder-outline" size={22} color={color} /> },
+    { id: 'mumbl', label: 'MUMBL', icon: (color: string) => <Ionicons name="mic-outline" size={22} color={color} /> },
   ];
 
   return (
@@ -88,7 +88,7 @@ export function Sidebar({ visible, onClose }: SidebarProps) {
           style={[
             {
               width: '85%',
-              backgroundColor: '#000',
+              backgroundColor: '#1A1A1A',
               paddingTop: insets.top,
               paddingBottom: insets.bottom,
             },
@@ -99,22 +99,22 @@ export function Sidebar({ visible, onClose }: SidebarProps) {
             {/* Top Search with pen icon */}
             <View className="px-4 pt-2 pb-5">
               <View className="flex-row items-center justify-between">
-                <View className="flex-1 mr-3 bg-[#1F1F1F] rounded-2xl px-4 py-3 flex-row items-center">
-                  <Ionicons name="search" size={18} color="#8E8E93" />
+                <View className="flex-1 mr-3 bg-[#2A2A2A] rounded-xl px-4 py-3 flex-row items-center">
+                  <Ionicons name="search" size={18} color="#9CA3AF" />
                   <TextInput
                     placeholder="Search"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
-                    className="flex-1 ml-3 text-white text-base"
-                    placeholderTextColor="#8E8E93"
+                    className="flex-1 ml-3 text-gray-200 text-base"
+                    placeholderTextColor="#9CA3AF"
                   />
                 </View>
                 <Pressable
                   accessibilityLabel="Compose"
                   className="w-10 h-10 rounded-xl items-center justify-center"
-                  style={{ backgroundColor: '#1F1F1F' }}
+                  style={{ backgroundColor: '#2A2A2A' }}
                 >
-                  <Ionicons name="create-outline" size={20} color="#FFFFFF" />
+                  <Ionicons name="create-outline" size={20} color="#F3F4F6" />
                 </Pressable>
               </View>
             </View>
@@ -124,16 +124,69 @@ export function Sidebar({ visible, onClose }: SidebarProps) {
               {menuItems.map((item, index) => (
                 <Pressable
                   key={item.id}
-                  className="flex-row items-center rounded-2xl px-4 py-3 mb-3 active:bg-[#1F1F1F]"
+                  onPress={() => {
+                    if (item.id === 'mumbl') {
+                      onSelectTool?.('mumbl');
+                    } else if (item.id === 'projects') {
+                      onSelectProject?.('projects');
+                    }
+                    onClose();
+                  }}
+                  className="flex-row items-center rounded-xl px-4 py-4 mb-3 active:bg-gray-700"
+                  style={{ backgroundColor: '#2A2A2A' }}
                 >
                   <View className="mr-3">
-                    {item.icon('#FFFFFF')}
+                    {item.icon('#F3F4F6')}
                   </View>
-                  <Text className="text-white text-lg font-medium">{item.label}</Text>
+                  <Text className="text-gray-200 text-lg font-medium">{item.label}</Text>
                 </Pressable>
               ))}
             </View>
           </ScrollView>
+
+          {/* User area at bottom */}
+          <View className="px-4 pt-3 border-t border-gray-700">
+            <Pressable
+              onPress={() => setSettingsVisible(true)}
+              className="flex-row items-center p-3 rounded-lg"
+            >
+              <View className="w-9 h-9 bg-blue-500 rounded-full items-center justify-center">
+                <Text className="text-white font-bold text-sm">SL</Text>
+              </View>
+              <Text className="text-gray-200 font-medium ml-3">Sam Lee</Text>
+            </Pressable>
+          </View>
+
+          {/* Settings sheet modal */}
+          <Modal visible={isSettingsVisible} transparent animationType="fade" onRequestClose={() => setSettingsVisible(false)}>
+            <Pressable className="flex-1 bg-black/40" onPress={() => setSettingsVisible(false)} />
+            <View
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: '#1C1C1E',
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20,
+                paddingBottom: insets.bottom + 12,
+              }}
+            >
+              <View className="px-5 pt-4 pb-2">
+                <View className="w-10 h-1.5 bg-gray-600 self-center rounded-full mb-3" />
+                <Text className="text-gray-200 text-lg font-semibold mb-4">Settings</Text>
+                <Pressable className="py-3">
+                  <Text className="text-gray-200 text-base">Account</Text>
+                </Pressable>
+                <Pressable className="py-3">
+                  <Text className="text-gray-200 text-base">Appearance</Text>
+                </Pressable>
+                <Pressable className="py-3">
+                  <Text className="text-gray-200 text-base">About</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
         </Animated.View>
       </View>
     </Modal>

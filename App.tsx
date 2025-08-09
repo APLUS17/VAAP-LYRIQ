@@ -340,7 +340,6 @@ function MainScreen() {
             onClose={() => setSidebarVisible(false)}
             onSelectTool={handleSelectTool}
             onSelectProject={handleSelectProject}
-            onNewSong={handleNewSong}
           />
         </Animated.View>
       </PanGestureHandler>

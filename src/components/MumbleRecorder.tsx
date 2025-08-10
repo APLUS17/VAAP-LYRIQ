@@ -24,6 +24,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { transcribeAudio } from '../api/transcribe-audio';
 
 // Types
 interface MumbleRecording {
@@ -79,6 +80,7 @@ export function MumbleRecorder() {
   const [tempDuration, setTempDuration] = useState(0);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [isTranscribingId, setIsTranscribingId] = useState<string | null>(null);
   
   const { recordings, currentlyPlaying, addRecording, deleteRecording, setCurrentlyPlaying } = useMumbleStore();
   
@@ -161,7 +163,7 @@ export function MumbleRecorder() {
       const uri = recording.getURI();
       const status = await recording.getStatusAsync();
       
-      if (uri && status.isLoaded) {
+      if (uri) {
         setTempRecordingUri(uri);
         setTempDuration(Math.floor((status.durationMillis || 0) / 1000));
         setShowNamingModal(true);
@@ -238,6 +240,18 @@ export function MumbleRecorder() {
     } catch (error) {
       console.error('Failed to play recording:', error);
       Alert.alert('Playback Error', 'Failed to play recording');
+    }
+  };
+
+  const transcribeRecording = async (recordingItem: MumbleRecording) => {
+    try {
+      setIsTranscribingId(recordingItem.id);
+      const text = await transcribeAudio(recordingItem.uri);
+      Alert.alert('Transcription', text || 'No text returned');
+    } catch (err: any) {
+      Alert.alert('Transcription Error', err?.message || 'Failed to transcribe. Ensure API key is set.');
+    } finally {
+      setIsTranscribingId(null);
     }
   };
 
@@ -390,6 +404,14 @@ export function MumbleRecorder() {
                       size={16}
                       color="white"
                     />
+                  </Pressable>
+                  
+                  <Pressable
+                    onPress={() => transcribeRecording(recording)}
+                    disabled={isTranscribingId === recording.id}
+                    className="w-10 h-10 rounded-full bg-blue-500 items-center justify-center"
+                  >
+                    <Ionicons name="document-text" size={16} color="white" />
                   </Pressable>
                   
                   <Pressable

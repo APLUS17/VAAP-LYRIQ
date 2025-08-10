@@ -22,6 +22,7 @@ import RecordingModal from './src/components/RecordingModal';
 import { Sidebar } from './src/components/Sidebar';
 import PerformanceView from './src/components/PerformanceView';
 import ProjectsScreen from './src/screens/ProjectsScreen';
+import MumbleScreen from './src/screens/MumbleScreen';
 
 
 
@@ -245,9 +246,10 @@ function MainScreen() {
 
   const handleSelectTool = useCallback((toolId: string) => {
     if (toolId === 'mumbl') {
-      toggleRecordingModal(true);
+      navigation.navigate('Mumble');
+      return;
     }
-  }, [toggleRecordingModal]);
+  }, [navigation]);
 
   const handleSelectProject = useCallback((_projectId: string) => {
     navigation.navigate('Projects');
@@ -364,6 +366,7 @@ export default function App() {
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Main" component={MainScreen} />
             <Stack.Screen name="Projects" component={ProjectsScreen} />
+            <Stack.Screen name="Mumble" component={MumbleScreen} />
           </Stack.Navigator>
           <StatusBar style="dark" />
         </NavigationContainer>
